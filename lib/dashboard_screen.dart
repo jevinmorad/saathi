@@ -26,7 +26,7 @@ class DashboardScreen extends StatelessWidget {
           mainAxisSpacing: 16,
           children: [
             _dashboardButton(
-              icon: Icons.person,
+              icon: Icons.person_add,
               label: 'Add User',
               color: Colors.blue,
               onPressed: () {

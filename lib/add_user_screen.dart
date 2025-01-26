@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
-class AddUser extends StatelessWidget {
+class AddUser extends StatefulWidget {
   const AddUser({super.key});
+
+  @override
+  State<AddUser> createState() => _AddUserState();
+}
+
+class _AddUserState extends State<AddUser> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _mobileNumberController = TextEditingController();
+  final _dateController = TextEditingController();
+  final _cityController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,37 +34,38 @@ class AddUser extends StatelessWidget {
               height: 16,
             ),
             _textField(
-                label: 'Email Address', hintText: 'Enter your email address'),
+                label: 'Email Address', hintText: 'Enter your email address', keyboardType: TextInputType.emailAddress),
             SizedBox(
               height: 16,
             ),
             _textField(
-                label: 'Mobile number', hintText: 'Enter your mobile number'),
+                label: 'Mobile number', hintText: 'Enter your mobile number', keyboardType: TextInputType.phone),
             SizedBox(
               height: 16,
             ),
-            _textField(label: 'Date of Birth', hintText: 'DD/MM/YYYY'),
+            _textField(label: 'Date of Birth', hintText: 'DD/MM/YYYY', keyboardType: TextInputType.datetime),
             SizedBox(
               height: 16,
             ),
-            _textField(label: 'City', hintText: 'Enter your city'),
+            _dropdownField(label: 'City', options: ['Rajkot', 'Surat', 'Ahmedabad', 'Baroda', 'Dang', 'Anand']),
             SizedBox(
               height: 16,
             ),
-            _dropdownField(label: 'Gender', items: ['Male', 'Female', 'Other']),
+            _radioButtons(
+                label: 'Gender', options: ['Male', 'Female', 'Other']),
             SizedBox(
               height: 16,
             ),
-            _textField(label: 'Hobbies', hintText: 'Enter your hobbies'),
+            _checkBoxes(label: 'Hobbies', options: ['Reading', 'Traveling', 'Gaming', 'Cooking', 'Playing']),
             SizedBox(
               height: 16,
             ),
-            _textField(label: 'Password', hintText: 'Enter your password'),
+            _textField(label: 'Password', hintText: 'Enter your password', obscureText: true),
             SizedBox(
               height: 16,
             ),
             _textField(
-                label: 'Confirm password', hintText: 'Re-enter your password'),
+                label: 'Confirm password', hintText: 'Re-enter your password', obscureText: true),
             SizedBox(
               height: 32,
             ),
@@ -78,7 +90,7 @@ class AddUser extends StatelessWidget {
     );
   }
 
-  Widget _textField({required String label, required String hintText}) {
+  Widget _textField({required String label, required String hintText, TextInputType keyboardType = TextInputType.text, bool obscureText = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -90,6 +102,8 @@ class AddUser extends StatelessWidget {
           height: 8,
         ),
         TextField(
+          keyboardType: keyboardType,
+          obscureText: obscureText,
           decoration: InputDecoration(
             hintText: hintText,
             border: OutlineInputBorder(
@@ -102,8 +116,9 @@ class AddUser extends StatelessWidget {
     );
   }
 
-  Widget _dropdownField({required String label, required List<String> items}) {
+  Widget _dropdownField({required String label, required List<String> options}) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
@@ -120,7 +135,9 @@ class AddUser extends StatelessWidget {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              items: items.map((String item) {
+              isExpanded: true,
+              value: options.first,
+              items: options.map((String item) {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(item),
@@ -130,6 +147,54 @@ class AddUser extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _radioButtons({required String label, required List<String> options}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Column(
+          children: options
+              .map(
+                (String option) => Row(
+                  children: [
+                    Radio<String>(
+                      value: option,
+                      groupValue: null,
+                      onChanged: (String? value) {},
+                    ),
+                    Text(option),
+                  ],
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _checkBoxes({required String label, required List<String> options}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Column(
+          children: options.map((String option) => Row(
+            children: [
+              Checkbox(value: false, onChanged: (bool? value){}),
+              Text(option),
+            ],
+          )).toList(),
+        )
       ],
     );
   }

@@ -98,9 +98,7 @@ class DashboardScreen extends StatelessWidget {
             size: 48.0,
             color: color,
           ),
-          SizedBox(
-            height: 8,
-          ),
+          SizedBox(height: 8),
           Text(
             label,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),

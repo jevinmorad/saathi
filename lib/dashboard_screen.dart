@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matrimonial_app/user_list.dart';
 import 'package:matrimonial_app/user_list_screen.dart';
 
 import 'add_user_screen.dart';
@@ -43,7 +44,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserList()),
+                  MaterialPageRoute(builder: (context) => UserListScreen()),
                 );
               },
             ),

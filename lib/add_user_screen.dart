@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:matrimonial_app/user_list.dart';
 
 class AddUser extends StatefulWidget {
   const AddUser({super.key});
@@ -17,7 +18,7 @@ class _AddUserState extends State<AddUser> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String? _selectedGender;
-
+  String? _selectCity;
   List<String> _selectHobbies = [];
 
   @override
@@ -43,9 +44,7 @@ class _AddUserState extends State<AddUser> {
                 hintText: 'Enter your full name',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email is required';
-                  } else if (!RegExp(r"^[a-zA-Z\s'-]{3,50}").hasMatch(value)) {
-                    return 'Enter a valid full name (3-50 characters, alphabets only)';
+                    return 'Name is required';
                   }
                   return null;
                 },
@@ -87,29 +86,22 @@ class _AddUserState extends State<AddUser> {
                 label: 'Date of Birth',
                 hintText: 'DD/MM/YYYY',
                 controller: _dobController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Date of Birth is required.';
-                    }
-                    try {
-                      final parts = value.split('/');
-                      final day = int.parse(parts[0]);
-                      final month = int.parse(parts[1]);
-                      final year = int.parse(parts[2]);
-                      final dob = DateTime(year, month, day);
-                      final today = DateTime.now();
-                      final age = today.year - dob.year;
-                      if (dob.isAfter(today.subtract(Duration(days: age * 365)))) {
-                        return 'Invalid Date of Birth.';
-                      }
-                      if (age < 18 || age > 80) {
-                        return 'Age must be between 18 and 80 years.';
-                      }
-                    } catch (e) {
-                      return 'Invalid date format.';
-                    }
-                    return null;
-                  },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Date of Birth is required.';
+                  }
+                  final parts = value.split('/');
+                  final day = int.parse(parts[0]);
+                  final month = int.parse(parts[1]);
+                  final year = int.parse(parts[2]);
+                  final dob = DateTime(year, month, day);
+                  final today = DateTime.now();
+                  final age = today.difference(dob).inDays ~/ 365;
+                  if (age < 18 || age > 80) {
+                    return 'Age must be between 18 and 80 years.';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 16),
               _dropdownField(
@@ -124,6 +116,7 @@ class _AddUserState extends State<AddUser> {
                 ],
                 onChanged: (value) {
                   setState(() {
+                    _selectCity = value;
                   });
                 },
                 validator: (value) {
@@ -135,13 +128,15 @@ class _AddUserState extends State<AddUser> {
               ),
               SizedBox(height: 16),
               _radioButtons(
-                  label: 'Gender',
-                  options: ['Male', 'Female', 'Other'],
-                  onChanged: (value) {
-                    setState(() {_selectedGender = value;});
-                  },
+                label: 'Gender',
+                options: ['Male', 'Female', 'Other'],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                },
                 validator: (value) {
-                  if(value == null) {
+                  if (value == null) {
                     return 'Please select your gender';
                   }
                   return null;
@@ -167,29 +162,58 @@ class _AddUserState extends State<AddUser> {
               ),
               SizedBox(height: 16),
               _textField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hintText: 'Enter your password',
-                  obscureText: true),
+                controller: _passwordController,
+                label: 'Password',
+                hintText: 'Enter your password',
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Password is required';
+                  } else if (value.length < 6) {
+                    return 'Password must be at least 6 characters long';
+                  }
+                  return null;
+                },
+              ),
               SizedBox(height: 16),
               _textField(
-                  controller: _confirmPasswordController,
-                  label: 'Confirm password',
-                  hintText: 'Re-enter your password',
-                  obscureText: true),
+                controller: _confirmPasswordController,
+                label: 'Confirm password',
+                hintText: 'Re-enter your password',
+                obscureText: true,
+                validator: (value) {
+                  if (value != _passwordController.text) {
+                    return 'Password do not match';
+                  }
+                  return null;
+                },
+              ),
               SizedBox(height: 32),
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                    backgroundColor: Colors.red,
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   onPressed: () {
-                    if(_formKey.currentState!.validate()) {
-                      print('Form submitted');
+                    if (_formKey.currentState!.validate()) {
+                      final user = User(
+                        name: _nameController.text,
+                        email: _emailController.text,
+                        mobileNumber: _mobileNumberController.text,
+                        dob: _dobController.text,
+                        gender: _selectedGender!,
+                        city: _selectCity!,
+                        hobbies: _selectHobbies,
+                        password: _passwordController.text,
+                      );
+
+                      final userList = UserList();
+                      userList.addUser(user);
+                      Navigator.pop(context);
                     }
                   },
                   child: Text(
@@ -255,6 +279,9 @@ class _AddUserState extends State<AddUser> {
         SizedBox(height: 8.0),
         GestureDetector(
           onTap: () async {
+            // Unfocus the text field before opening the date picker
+            FocusScope.of(context).unfocus();
+
             DateTime? pickDate = await showDatePicker(
               context: context,
               firstDate: DateTime(1950),
@@ -262,7 +289,7 @@ class _AddUserState extends State<AddUser> {
               initialDate: DateTime.now(),
             );
             if (pickDate != null) {
-              String formattedDate = DateFormat('dd/MM/yyyy').format(pickDate); // Change format to DD/MM/YYYY
+              String formattedDate = DateFormat('dd/MM/yyyy').format(pickDate);
               setState(() {
                 controller.text = formattedDate;
               });
@@ -281,7 +308,7 @@ class _AddUserState extends State<AddUser> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 contentPadding:
-                EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -340,9 +367,9 @@ class _AddUserState extends State<AddUser> {
         ),
         FormField<String>(
           validator: validator,
-          builder: (state){
+          builder: (state) {
             return Column(
-              children: options.map((String option){
+              children: options.map((String option) {
                 return Row(
                   children: [
                     Radio<String>(

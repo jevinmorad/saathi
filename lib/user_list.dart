@@ -21,26 +21,26 @@ class User {
 }
 
 class UserList {
-  final List<User> _users = [];
+  static List<User> users = [];
 
   List<User> getUsers() {
-    return _users;
+    return users;
   }
 
   void addUser(User user) {
-    _users.add(user);
-    print(_users);
+    users.add(user);
+    print(users);
   }
 
   void editUser(int index, User updateUser) {
-    if(index>=0 && index<_users.length) {
-      _users[index] = updateUser;
+    if(index>=0 && index<users.length) {
+      users[index] = updateUser;
     }
   }
 
   void deletedUser(int index) {
-    if(index>=0 && index<_users.length) {
-      _users.removeAt(index);
+    if(index>=0 && index<users.length) {
+      users.removeAt(index);
     }
   }
 }

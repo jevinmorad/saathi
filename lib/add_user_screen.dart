@@ -135,12 +135,6 @@ class _AddUserState extends State<AddUser> {
                     _selectedGender = value;
                   });
                 },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Please select your gender';
-                  }
-                  return null;
-                },
               ),
               SizedBox(height: 16),
               _checkBoxes(
@@ -212,6 +206,7 @@ class _AddUserState extends State<AddUser> {
                       );
 
                       final userList = UserList();
+                      print(user);
                       userList.addUser(user);
                       Navigator.pop(context);
                     }
@@ -279,9 +274,6 @@ class _AddUserState extends State<AddUser> {
         SizedBox(height: 8.0),
         GestureDetector(
           onTap: () async {
-            // Unfocus the text field before opening the date picker
-            FocusScope.of(context).unfocus();
-
             DateTime? pickDate = await showDatePicker(
               context: context,
               firstDate: DateTime(1950),
@@ -356,7 +348,6 @@ class _AddUserState extends State<AddUser> {
     required String label,
     required List<String> options,
     required Function(String?)? onChanged,
-    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,24 +356,19 @@ class _AddUserState extends State<AddUser> {
           label,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        FormField<String>(
-          validator: validator,
-          builder: (state) {
-            return Column(
-              children: options.map((String option) {
-                return Row(
-                  children: [
-                    Radio<String>(
-                      value: option,
-                      groupValue: _selectedGender,
-                      onChanged: onChanged,
-                    ),
-                    Text(option),
-                  ],
-                );
-              }).toList(),
+        Column(
+          children: options.map((String option) {
+            return Row(
+              children: [
+                Radio<String>(
+                  value: option,
+                  groupValue: _selectedGender,
+                  onChanged: onChanged,
+                ),
+                Text(option),
+              ],
             );
-          },
+          }).toList(),
         ),
       ],
     );

@@ -7,6 +7,7 @@ class User {
   final String city;
   final List<String> hobbies;
   final String password;
+  bool isFavourite;
 
   User({
     required this.name,
@@ -17,30 +18,50 @@ class User {
     required this.city,
     required this.hobbies,
     required this.password,
+    required this.isFavourite,
   });
 }
 
 class UserList {
-  static List<User> users = [];
+  final List<User> _users = [
+    User(
+      name: 'Jevin',
+      email: 'jevinmorad@gmail.com',
+      mobileNumber: '9714630965',
+      dob: '29/01/2006',
+      gender: 'Male',
+      city: 'Rajkot',
+      hobbies: ['playing', 'reading', 'eating'],
+      password: '123456',
+      isFavourite: false,
+    ),
+  ];
 
   List<User> getUsers() {
-    return users;
+    return _users;
+  }
+
+  User getUserAt(int index) {
+    return _users[index];
   }
 
   void addUser(User user) {
-    users.add(user);
-    print(users);
+    _users.add(user);
+  }
+
+  void addUserAt(int index, User user) {
+    _users[index]= user;
   }
 
   void editUser(int index, User updateUser) {
-    if(index>=0 && index<users.length) {
-      users[index] = updateUser;
+    if(index>=0 && index<_users.length) {
+      _users[index] = updateUser;
     }
   }
 
-  void deletedUser(int index) {
-    if(index>=0 && index<users.length) {
-      users.removeAt(index);
+  void deleteUser(int index) {
+    if(index>=0 && index<_users.length) {
+      _users.removeAt(index);
     }
   }
 }

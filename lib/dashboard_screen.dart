@@ -11,6 +11,8 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userList = UserList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -33,7 +35,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AddUser()),
+                  MaterialPageRoute(builder: (context) => AddUser(userList: userList,)),
                 );
               },
             ),
@@ -44,7 +46,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserListScreen()),
+                  MaterialPageRoute(builder: (context) => UserListScreen(userList: userList)),
                 );
               },
             ),
@@ -55,7 +57,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Favourite()),
+                  MaterialPageRoute(builder: (context) => FavouriteScreen(userList: userList,)),
                 );
               },
             ),
@@ -66,7 +68,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AboutUs()),
+                  MaterialPageRoute(builder: (context) => AboutUsScreen()),
                 );
               },
             ),

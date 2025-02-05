@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:matrimonial_app/user_list.dart';
 
 class AddUser extends StatefulWidget {
-  const AddUser({super.key});
+  final UserList userList;
+  final int? index;
+  const AddUser({super.key, required this.userList, this.index});
 
   @override
   State<AddUser> createState() => _AddUserState();
@@ -18,394 +20,380 @@ class _AddUserState extends State<AddUser> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String? _selectedGender;
-  String? _selectCity;
+  String? _selectCity = 'Select City';
   List<String> _selectHobbies = [];
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    if (widget.index != null) {
+      User user = widget.userList.getUserAt(widget.index!);
+      _nameController.text = user.name;
+      _emailController.text = user.email;
+      _mobileNumberController.text = user.mobileNumber;
+      _dobController.text = user.dob;
+      _selectedGender = user.gender;
+      _selectCity = user.city;
+      _selectHobbies = user.hobbies;
+      _passwordController.text = user.password;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'About Us',
+        title: const Text(
+          'Register',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.redAccent,
+        centerTitle: true,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _textField(
-                controller: _nameController,
-                label: 'Name',
-                hintText: 'Enter your full name',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Name is required';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              _textField(
-                controller: _emailController,
-                label: 'Email Address',
-                hintText: 'Enter your email address',
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email is required';
-                  } else if (!RegExp(
-                          r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-                      .hasMatch(value)) {
-                    return 'Enter a valid email address.';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              _textField(
-                controller: _mobileNumberController,
-                label: 'Mobile number',
-                hintText: 'Enter your mobile number',
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Mobile number is required';
-                  } else if (!RegExp(r"^\+?[0-9]{10,15}").hasMatch(value)) {
-                    return 'Enter a valid mobile number';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              _datePickerField(
-                label: 'Date of Birth',
-                hintText: 'DD/MM/YYYY',
-                controller: _dobController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Date of Birth is required.';
-                  }
-                  final parts = value.split('/');
-                  final day = int.parse(parts[0]);
-                  final month = int.parse(parts[1]);
-                  final year = int.parse(parts[2]);
-                  final dob = DateTime(year, month, day);
-                  final today = DateTime.now();
-                  final age = today.difference(dob).inDays ~/ 365;
-                  if (age < 18 || age > 80) {
-                    return 'Age must be between 18 and 80 years.';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              _dropdownField(
-                label: 'City',
-                options: [
-                  'Rajkot',
-                  'Surat',
-                  'Ahmedabad',
-                  'Baroda',
-                  'Dang',
-                  'Anand'
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectCity = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == 'Select City' || value == null) {
-                    return 'Please select a city';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              _radioButtons(
-                label: 'Gender',
-                options: ['Male', 'Female', 'Other'],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedGender = value;
-                  });
-                },
-              ),
-              SizedBox(height: 16),
-              _checkBoxes(
-                label: 'Hobbies',
-                options: [
-                  'Reading',
-                  'Traveling',
-                  'Gaming',
-                  'Cooking',
-                  'Playing'
-                ],
-                onChange: (value) {
-                  setState(
-                    () {
-                      _selectHobbies = value;
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _textField(
+                  _nameController,
+                  label: 'Name',
+                  hint: 'Enter your full name',
+                  icon: Icons.person,
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Name is required';
+                    }
+                    return null;
+                  },
+                ),
+                _textField(
+                  _emailController,
+                  label: 'Email',
+                  hint: 'Enter your email',
+                  icon: Icons.email,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    } else if (!RegExp(
+                        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                        .hasMatch(value)) {
+                      return 'Enter a valid email address';
+                    }
+                    return null;
+                  },
+                ),
+                _textField(
+                  _mobileNumberController,
+                  label: 'Mobile Number',
+                  hint: 'Enter your phone number',
+                  icon: Icons.phone,
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Mobile number is required';
+                    } else if (!RegExp(r"^\+?[0-9]{10,15}").hasMatch(value)) {
+                      return 'Enter a valid mobile number';
+                    }
+                    return null;
+                  },
+                ),
+                _datePicker(
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select your date of birth';
+                    }
+                    DateTime dob = DateFormat('dd/MM/yyyy').parse(value);
+                    DateTime today = DateTime.now();
+                    int age = today.year - dob.year;
+                    if (dob.add(Duration(days: age * 365)).isAfter(today)) {
+                      age--;
+                    }
+                    if (age < 18) {
+                      return 'You must be at least 18 years old to register';
+                    }
+                    return null;
+                  },
+                ),
+                _dropdownField(
+                  options: [
+                    'Rajkot',
+                    'Surat',
+                    'Ahmedabad',
+                    'Baroda',
+                    'Dang',
+                    'Anand'
+                  ],
+                  onChanged: (value) => setState(() => _selectCity = value),
+                ),
+                _radioButton(
+                  options: ['Male', 'Female', 'Other'],
+                  groupedValue: _selectedGender,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGender = value;
+                    });
+                  },
+                ),
+                _checkBoxes(),
+                SizedBox(height: 10,),
+                _textField(
+                  _passwordController,
+                  label: 'Password',
+                  hint: 'Enter your password',
+                  icon: Icons.lock,
+                  iconButton: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _showPassword = !_showPassword;
+                      });
                     },
-                  );
-                },
-              ),
-              SizedBox(height: 16),
-              _textField(
-                controller: _passwordController,
-                label: 'Password',
-                hintText: 'Enter your password',
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password is required';
-                  } else if (value.length < 6) {
-                    return 'Password must be at least 6 characters long';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              _textField(
-                controller: _confirmPasswordController,
-                label: 'Confirm password',
-                hintText: 'Re-enter your password',
-                obscureText: true,
-                validator: (value) {
-                  if (value != _passwordController.text) {
-                    return 'Password do not match';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 32),
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    icon: Icon(_showPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                  ),
+                  obscureText: !_showPassword,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter password';
+                    }
+                    return null;
+                  },
+                ),
+                _textField(
+                  _confirmPasswordController,
+                  label: 'Confirm Password',
+                  hint: 'Re-enter password',
+                  icon: Icons.lock,
+                  iconButton: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _showConfirmPassword = !_showConfirmPassword;
+                      });
+                    },
+                    icon: Icon(_showConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                  ),
+                  obscureText: !_showConfirmPassword,
+                  validator: (value) {
+                    if (_passwordController.text != value) {
+                      return "Password not match";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        if (_selectedGender == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Please select a gender')),
+                          );
+                          return;
+                        }
+                        if (_selectCity == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Please select a city')),
+                          );
+                          return;
+                        }
+                        if (_selectHobbies.length > 1 &&
+                            _selectHobbies.contains('None')) {
+                          _selectHobbies.remove('None');
+                        }
+                        final user = User(
+                          name: _nameController.text,
+                          email: _emailController.text,
+                          mobileNumber: _mobileNumberController.text,
+                          dob: _dobController.text,
+                          gender: _selectedGender!,
+                          city: _selectCity!,
+                          hobbies: _selectHobbies,
+                          password: _passwordController.text,
+                          isFavourite: false,
+                        );
+
+                        if(widget.index!=null) {
+                          widget.userList.addUserAt(widget.index!, user);
+                        }
+                        else {
+                          widget.userList.addUser(user);
+                        }
+                        setState(() {});
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text(
+                      'Submit',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      final user = User(
-                        name: _nameController.text,
-                        email: _emailController.text,
-                        mobileNumber: _mobileNumberController.text,
-                        dob: _dobController.text,
-                        gender: _selectedGender!,
-                        city: _selectCity!,
-                        hobbies: _selectHobbies,
-                        password: _passwordController.text,
-                      );
-
-                      final userList = UserList();
-                      print(user);
-                      userList.addUser(user);
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Text(
-                    'Save',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _textField({
-    required String label,
-    required String hintText,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-    required TextEditingController controller,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+  Widget _textField(
+      TextEditingController controller, {
+        required String label,
+        required String hint,
+        required IconData icon,
+        IconButton? iconButton,
+        TextInputType keyboardType = TextInputType.text,
+        TextCapitalization textCapitalization = TextCapitalization.none,
+        bool obscureText = false,
+        String? Function(String?)? validator,
+      }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        textCapitalization: textCapitalization, // Corrected usage
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          prefixIcon: Icon(icon, color: Colors.redAccent),
+          suffixIcon: iconButton,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          filled: true,
+          fillColor: Colors.grey[200],
         ),
-        SizedBox(height: 8.0),
-        TextFormField(
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          controller: controller,
-          validator: validator,
-          decoration: InputDecoration(
-            hintText: hintText,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _datePickerField({
-    required String label,
-    required String hintText,
-    required TextEditingController controller,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+  Widget _datePicker({String? Function(String?)? validator}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: _dobController,
+        readOnly: true,
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: "Date of Birth",
+          prefixIcon: Icon(Icons.calendar_today, color: Colors.redAccent),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          filled: true,
+          fillColor: Colors.grey[200],
         ),
-        SizedBox(height: 8.0),
-        GestureDetector(
-          onTap: () async {
-            DateTime? pickDate = await showDatePicker(
-              context: context,
-              firstDate: DateTime(1950),
-              lastDate: DateTime.now(),
-              initialDate: DateTime.now(),
-            );
-            if (pickDate != null) {
-              String formattedDate = DateFormat('dd/MM/yyyy').format(pickDate);
-              setState(() {
-                controller.text = formattedDate;
-              });
-            }
-          },
-          child: AbsorbPointer(
-            child: TextFormField(
-              controller: controller,
-              validator: validator,
-              decoration: InputDecoration(
-                suffixIcon: Icon(Icons.calendar_today),
-                hintText: controller.text.isEmpty
-                    ? 'Tap to select date'
-                    : controller.text,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ),
-        ),
-      ],
+        onTap: () async {
+          DateTime today = DateTime.now();
+          DateTime firstDate = DateTime(today.year - 80, today.month, today.day);
+          DateTime lastDate = DateTime(today.year - 18, today.month, today.day);
+
+          DateTime? pickedDate = await showDatePicker(
+            context: context,
+            firstDate: firstDate,
+            lastDate: lastDate,
+            initialDate: _dobController.text.isEmpty?lastDate:DateFormat('dd/MM/yyyy').parse(_dobController.text),
+          );
+          if (pickedDate != null) {
+            setState(() {
+              _dobController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
+            });
+          }
+        },
+      ),
     );
   }
 
   Widget _dropdownField({
-    required String label,
     required List<String> options,
     required Function(String?)? onChanged,
-    String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(
+          labelText: _selectCity,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          filled: true,
+          fillColor: Colors.grey[200],
         ),
-        SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: options.first,
-          items: options.map((String option) {
-            return DropdownMenuItem<String>(
-              value: option,
-              child: Text(option),
-            );
-          }).toList(),
-          validator: validator,
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        items: options
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _radioButton({
+    required List<String> options,
+    required String? groupedValue,
+    required Function(String?)? onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Gender',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Column(  // Change from Row to Column
+            children: options.map((gender) {
+              return RadioListTile(
+                title: Text(gender),
+                value: gender,
+                groupValue: groupedValue,
+                onChanged: onChanged,
+                activeColor: Colors.redAccent,
+              );
+            }).toList(),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _radioButtons({
-    required String label,
-    required List<String> options,
-    required Function(String?)? onChanged,
-  }) {
+  Widget _checkBoxes() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        Column(
-          children: options.map((String option) {
-            return Row(
-              children: [
-                Radio<String>(
-                  value: option,
-                  groupValue: _selectedGender,
-                  onChanged: onChanged,
-                ),
-                Text(option),
-              ],
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _checkBoxes({
-    required String label,
-    required List<String> options,
-    required Function(List<String>)? onChange,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        Column(
-          children: options
-              .map((String option) => Row(
-                    children: [
-                      Checkbox(
-                        value: _selectHobbies.contains(option),
-                        onChanged: (bool? value) {
-                          if (value == true) {
-                            _selectHobbies.add(option);
-                          } else {
-                            _selectHobbies.remove(option);
-                          }
-                          onChange?.call(_selectHobbies);
-                        },
-                      ),
-                      Text(option),
-                    ],
-                  ))
-              .toList(),
-        )
+        const Text('Hobbies',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ...['Reading', 'Traveling', 'Gaming', 'Cooking', 'Playing']
+            .map((hobby) {
+          return CheckboxListTile(
+            title: Text(hobby),
+            value: _selectHobbies.contains(hobby),
+            onChanged: (bool? selected) {
+              setState(() {
+                selected == true
+                    ? _selectHobbies.add(hobby)
+                    : _selectHobbies.remove(hobby);
+              });
+            },
+            activeColor: Colors.redAccent,
+          );
+        }),
       ],
     );
   }

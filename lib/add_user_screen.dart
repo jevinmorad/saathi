@@ -5,7 +5,8 @@ import 'package:matrimonial_app/user_list.dart';
 class AddUser extends StatefulWidget {
   final UserList userList;
   final int? index;
-  const AddUser({super.key, required this.userList, this.index});
+  final User? user;
+  const AddUser({super.key, required this.userList, this.index, this.user});
 
   @override
   State<AddUser> createState() => _AddUserState();
@@ -30,8 +31,8 @@ class _AddUserState extends State<AddUser> {
     // TODO: implement initState
     super.initState();
 
-    if (widget.index != null) {
-      User user = widget.userList.getUserAt(widget.index!);
+    if (widget.user != null) {
+      User user = widget.user!;
       _nameController.text = user.name;
       _emailController.text = user.email;
       _mobileNumberController.text = user.mobileNumber;
@@ -234,7 +235,7 @@ class _AddUserState extends State<AddUser> {
                         );
 
                         if(widget.index!=null) {
-                          widget.userList.addUserAt(widget.index!, user);
+                          widget.userList.editUser(widget.index!, user);
                         }
                         else {
                           widget.userList.addUser(user);

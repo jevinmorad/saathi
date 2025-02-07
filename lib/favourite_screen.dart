@@ -22,18 +22,21 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   @override
   void initState() {
     super.initState();
-    favouriteUsers = widget.userList.getUsers().where((user)=>user.isFavourite).toList();
+    favouriteUsers =
+        widget.userList.getUsers().where((user) => user.isFavourite).toList();
     filteredUsers = favouriteUsers;
   }
 
   void _filterUsers(String query) {
     setState(() {
-      filteredUsers = favouriteUsers.where((user) =>
-      user.name.toLowerCase().contains(query.toLowerCase()) ||
-          user.city.toLowerCase().contains(query.toLowerCase()) ||
-          user.email.toLowerCase().contains(query.toLowerCase()) ||
-          user.mobileNumber.contains(query) ||
-          _calculateAge(user.dob).contains(query)).toList();
+      filteredUsers = favouriteUsers
+          .where((user) =>
+              user.name.toLowerCase().contains(query.toLowerCase()) ||
+              user.city.toLowerCase().contains(query.toLowerCase()) ||
+              user.email.toLowerCase().contains(query.toLowerCase()) ||
+              user.mobileNumber.contains(query) ||
+              _calculateAge(user.dob).contains(query))
+          .toList();
     });
   }
 
@@ -75,7 +78,10 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => UserDetailScreen( index: index, userList: widget.userList,),
+                          builder: (context) => UserDetailScreen(
+                            user: user,
+                            userList: widget.userList,
+                          ),
                         ),
                       );
                     },
@@ -143,7 +149,8 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                       MaterialPageRoute(
                         builder: (context) => AddUser(
                           userList: widget.userList,
-                          index: 0,
+                          index: index,
+                          user: user,
                         ),
                       ),
                     );

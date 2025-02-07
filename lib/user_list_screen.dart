@@ -27,12 +27,14 @@ class _UserListScreenState extends State<UserListScreen> {
 
   void _filterUsers(String query) {
     setState(() {
-      filteredUsers = users.where((user) =>
-      user.name.toLowerCase().contains(query.toLowerCase()) ||
-          user.city.toLowerCase().contains(query.toLowerCase()) ||
-          user.email.toLowerCase().contains(query.toLowerCase()) ||
-          user.mobileNumber.contains(query) ||
-          _calculateAge(user.dob).contains(query)).toList();
+      filteredUsers = users
+          .where((user) =>
+              user.name.toLowerCase().contains(query.toLowerCase()) ||
+              user.city.toLowerCase().contains(query.toLowerCase()) ||
+              user.email.toLowerCase().contains(query.toLowerCase()) ||
+              user.mobileNumber.contains(query) ||
+              _calculateAge(user.dob).contains(query))
+          .toList();
     });
   }
 
@@ -40,79 +42,84 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Find Your Match',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.redAccent,
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Search by name, city, age, email, phone...',
-                prefixIcon: const Icon(Icons.search, color: Colors.redAccent),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(color: Colors.redAccent),
-                ),
+      body: filteredUsers.isEmpty
+          ? Text('User not found')
+          : Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search by name, city, age, email, phone...',
+                      prefixIcon: Icon(Icons.search, color: Colors.redAccent),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(color: Colors.redAccent),
+                      ),
+                    ),
+                    onChanged: _filterUsers,
+                  ),
+                  SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredUsers.length,
+                      itemBuilder: (context, index) {
+                        final user = filteredUsers[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserDetailScreen(
+                                  user: user,
+                                  userList: widget.userList,
+                                ),
+                              ),
+                            );
+                          },
+                          child: _userCard(user, index, context),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-              onChanged: _filterUsers,
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredUsers.length,
-                itemBuilder: (context, index) {
-                  final user = filteredUsers[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UserDetailScreen(userList: widget.userList, index: index,),
-                        ),
-                      );
-                    },
-                    child: _userCard(user, index, context),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
   Widget _userCard(User user, int index, BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: const EdgeInsets.all(15),
+        padding: EdgeInsets.all(15),
         child: Column(
           children: [
             CircleAvatar(
               radius: 40,
               backgroundColor: Colors.redAccent.shade100,
-              child: const Icon(Icons.person, size: 50, color: Colors.white),
+              child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               user.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.redAccent,
               ),
             ),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             _userDetails(Icons.location_city, 'City', user.city),
             _userDetails(Icons.email, 'Email', user.email),
             _userDetails(Icons.phone, 'Mobile', user.mobileNumber),
@@ -142,6 +149,7 @@ class _UserListScreenState extends State<UserListScreen> {
                         builder: (context) => AddUser(
                           userList: widget.userList,
                           index: index,
+                          user: user,
                         ),
                       ),
                     );
@@ -166,19 +174,19 @@ class _UserListScreenState extends State<UserListScreen> {
 
   Widget _userDetails(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(icon, color: Colors.redAccent, size: 20),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Text(
             '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -208,30 +216,26 @@ class _UserListScreenState extends State<UserListScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete User'),
+          title: Text('Delete User'),
           content: Text('Are you sure you want to delete ${user.name}?'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                _deleteUser(user, index);
+                widget.userList.deleteUser(index);
                 Navigator.of(context).pop();
+                setState(() {});
               },
-              child: const Text('Delete'),
+              child: Text('Delete'),
             ),
           ],
         );
       },
     );
-  }
-
-  void _deleteUser(User user, int index) {
-    widget.userList.deleteUser(index);
-    setState(() {});
   }
 }

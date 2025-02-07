@@ -46,11 +46,7 @@ class UserList {
   }
 
   void addUser(User user) {
-    _users.add(user);
-  }
-
-  void addUserAt(int index, User user) {
-    _users[index]= user;
+    _users.insert(0, user);
   }
 
   void editUser(int index, User updateUser) {

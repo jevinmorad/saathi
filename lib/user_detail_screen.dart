@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matrimonial_app/add_user_screen.dart';
-import 'user_list.dart'; // Import your User model
+import 'user_list.dart';
 
 class UserDetailScreen extends StatefulWidget {
+  final User user;
   final UserList userList;
-  final int index;
-
+  
   const UserDetailScreen(
-      {super.key, required this.userList, required this.index});
+      {super.key, required this.user, required this.userList});
 
   @override
   State<UserDetailScreen> createState() => _UserDetailScreenState();
@@ -21,7 +21,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    user = widget.userList.getUserAt(widget.index);
+    user = widget.user;
   }
 
   @override
@@ -93,13 +93,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => AddUser(
-                        userList: widget.userList,
-                        index: widget.index,
+                        user: user, userList: widget.userList,
                       ),
                     ),
                   );
                   setState(() {
-                    user = widget.userList.getUserAt(widget.index);
+                    user = widget.user;
                   });
                 },
                 style: ElevatedButton.styleFrom(

@@ -14,10 +14,9 @@ class FavouriteScreen extends StatefulWidget {
 }
 
 class _FavouriteScreenState extends State<FavouriteScreen> {
-  final _searchController = TextEditingController();
   List<User> favouriteUsers = [];
   List<User> filteredUsers = [];
-  TextEditingController searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -56,7 +55,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
         child: Column(
           children: [
             TextField(
-              controller: searchController,
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search by name, city, age, email, phone...',
                 prefixIcon: const Icon(Icons.search, color: Colors.redAccent),
@@ -245,21 +244,5 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   void _deleteUser(User user, int index) {
     widget.userList.deleteUser(index);
     setState(() {});
-  }
-
-  Widget _search() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextFormField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          labelText: "Search by Name",
-          prefixIcon: Icon(Icons.search, color: Colors.redAccent),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          filled: true,
-          fillColor: Colors.grey[200],
-        ),
-      ),
-    );
   }
 }

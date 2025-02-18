@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:matrimonial_app/user_detail_screen.dart';
-import 'package:matrimonial_app/user_list.dart';
-import 'package:matrimonial_app/add_user_screen.dart';
+import 'package:saathi/user_detail_screen.dart';
+import 'package:saathi/user_list.dart';
+import 'package:saathi/add_user_screen.dart';
 
 class FavouriteScreen extends StatefulWidget {
   final UserList userList;

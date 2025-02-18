@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:matrimonial_app/user_list.dart';
+import 'package:saathi/user_list.dart';
 
 class AddUser extends StatefulWidget {
   final UserList userList;

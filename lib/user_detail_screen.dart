@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:matrimonial_app/add_user_screen.dart';
+import 'package:saathi/add_user_screen.dart';
 import 'user_list.dart';
 
 class UserDetailScreen extends StatefulWidget {

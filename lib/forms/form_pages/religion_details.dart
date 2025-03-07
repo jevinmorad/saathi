@@ -19,16 +19,54 @@ class _ReligionDetailsState extends State<ReligionDetails> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final List<String> religionOptions = [
-    'Hindu', 'Muslim', 'Christian', 'Jain', 'Sikh', 'Buddhist', 'Parsi',
-    'Jewish', 'Other', 'No Religion', 'Spiritual - not religious'
+    'Hindu',
+    'Muslim',
+    'Christian',
+    'Jain',
+    'Sikh',
+    'Buddhist',
+    'Parsi',
+    'Jewish',
+    'Other',
+    'No Religion',
+    'Spiritual - not religious'
   ];
 
   final List<String> communityOptions = [
-    "Aka", "Arabic", "Arunachali", "Assamese", "Awadhi", "Baluchi", "Bhojpuri",
-    "Bhutia", "Brahui", "Brij", "Burmese", "Chattisgarhi", "Chinese", "Coorgi",
-    "Dogri", "French", "Garhwali", "Garo", "Haryanavi", "Himachali/Pahari",
-    "Kashmiri", "Khandesi", "Khasi", "Konkani", "Kutchi", "Ladakhi", "Nepali",
-    "Sindhi", "Sinhala", "Spanish", "Swedish", "Tagalog", "Tulu", "Other"
+    "Aka",
+    "Arabic",
+    "Arunachali",
+    "Assamese",
+    "Awadhi",
+    "Baluchi",
+    "Bhojpuri",
+    "Bhutia",
+    "Brahui",
+    "Brij",
+    "Burmese",
+    "Chattisgarhi",
+    "Chinese",
+    "Coorgi",
+    "Dogri",
+    "French",
+    "Garhwali",
+    "Garo",
+    "Haryanavi",
+    "Himachali/Pahari",
+    "Kashmiri",
+    "Khandesi",
+    "Khasi",
+    "Konkani",
+    "Kutchi",
+    "Ladakhi",
+    "Nepali",
+    "Sindhi",
+    "Sinhala",
+    "Spanish",
+    "Swedish",
+    "Tagalog",
+    "Tulu",
+    "Other"
   ];
 
   final List<String> livingInOptions = [
@@ -57,8 +95,8 @@ class _ReligionDetailsState extends State<ReligionDetails> {
 
   bool get isFormValid =>
       user.religion.isNotEmpty &&
-          user.community.isNotEmpty &&
-          user.livingIn.isNotEmpty;
+      user.community.isNotEmpty &&
+      user.livingIn.isNotEmpty;
 
   void _validateForm() {
     setState(() {});
@@ -138,8 +176,7 @@ class _ReligionDetailsState extends State<ReligionDetails> {
 
             // Continue Button Section
             Padding(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 40, horizontal: 40),
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
               child: ContinueButton(
                 text: "Continue",
                 onPressed: isFormValid ? () => widget.onContinue() : null,

@@ -27,62 +27,75 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   final FocusNode _lastNameFocus = FocusNode();
   final FocusNode _dobFocus = FocusNode();
 
-  // These flags control when error messages are shown.
+  bool _isButtonEnabled = false;
   bool _firstNameTouched = false;
   bool _lastNameTouched = false;
   bool _dobTouched = false;
-
-  /// Computes form validity based solely on field values.
-  bool get isFormValid =>
-      _firstNameController.text.trim().isNotEmpty &&
-          _lastNameController.text.trim().isNotEmpty &&
-          _dobController.text.trim().isNotEmpty &&
-          user.gender.isNotEmpty;
 
   @override
   void initState() {
     super.initState();
 
-    // Pre-populate controllers with existing user data.
     _firstNameController.text = user.firstName;
     _lastNameController.text = user.lastName;
     _dobController.text = user.dateOfBirth;
 
-    // Mark each field as "touched" when it loses focus.
     _firstNameFocus.addListener(() {
       if (!_firstNameFocus.hasFocus) {
         setState(() => _firstNameTouched = true);
+        _validateForm();
       }
     });
 
     _lastNameFocus.addListener(() {
       if (!_lastNameFocus.hasFocus) {
         setState(() => _lastNameTouched = true);
+        _validateForm();
       }
     });
 
     _dobFocus.addListener(() {
       if (!_dobFocus.hasFocus) {
         setState(() => _dobTouched = true);
+        _validateForm();
       }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _validateForm();
     });
   }
 
-  /// Opens a date picker and updates the date of birth.
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _dobController.dispose();
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _dobFocus.dispose();
+    super.dispose();
+  }
+
+  void _validateForm() {
+    bool isValid = formKey.currentState?.validate() ?? false;
+    bool isGenderSelected = user.gender.isNotEmpty;
+
+    setState(() => _isButtonEnabled = isValid && isGenderSelected);
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     DateTime now = DateTime.now();
     DateTime firstDate = DateTime(now.year - 80, now.month, now.day);
     DateTime lastDate = DateTime(now.year - 21, now.month, now.day);
 
-    DateTime initialDate;
+    DateTime initialDate = lastDate;
     if (_dobController.text.trim().isNotEmpty) {
       try {
         initialDate = DateFormat('dd/MM/yyyy').parse(_dobController.text);
       } catch (e) {
         initialDate = lastDate;
       }
-    } else {
-      initialDate = lastDate;
     }
 
     DateTime? pickedDate = await showDatePicker(
@@ -98,26 +111,23 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         _dobController.text = formattedDate;
         user.dateOfBirth = formattedDate;
         _dobTouched = true;
+        _validateForm();
       });
     }
   }
 
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _dobController.dispose();
-    _firstNameFocus.dispose();
-    _lastNameFocus.dispose();
-    _dobFocus.dispose();
-    super.dispose();
+  void _onContinue() {
+    if (formKey.currentState?.validate() ?? false) {
+      user.firstName = _firstNameController.text.trim();
+      user.lastName = _lastNameController.text.trim();
+      widget.onContinue();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool formValid = isFormValid;
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 25),
+      padding: const EdgeInsets.symmetric(horizontal: 25),
       child: Form(
         key: formKey,
         child: Column(
@@ -142,20 +152,18 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               focusNode: _firstNameFocus,
               nextFocusNode: _lastNameFocus,
               textCapitalization: TextCapitalization.words,
-              // Show error only if this field was touched.
               validator: (value) {
-                if (_firstNameTouched && (value == null || value.trim().isEmpty)) {
-                  return 'First name is required';
-                }
+                if (!_firstNameTouched) return null;
+                if (value == null || value.trim().isEmpty) return 'First name is required';
                 return null;
               },
               onChange: (value) {
                 setState(() {
                   user.firstName = value!;
+                  _validateForm();
                 });
               },
-              onFieldSubmitted: (value) {
-                setState(() => _firstNameTouched = true);
+              onFieldSubmitted: (_) {
                 FocusScope.of(context).requestFocus(_lastNameFocus);
               },
             ),
@@ -164,21 +172,17 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               controller: _lastNameController,
               label: 'Last Name',
               focusNode: _lastNameFocus,
-              nextFocusNode: _dobFocus,
               textCapitalization: TextCapitalization.words,
               validator: (value) {
-                if (_lastNameTouched && (value == null || value.trim().isEmpty)) {
-                  return 'Last name is required';
-                }
+                if (!_lastNameTouched) return null;
+                if (value == null || value.trim().isEmpty) return 'Last name is required';
                 return null;
               },
               onChange: (value) {
                 setState(() {
                   user.lastName = value!;
+                  _validateForm();
                 });
-              },
-              onFieldSubmitted: (value) {
-                setState(() => _lastNameTouched = true);
               },
             ),
             const SizedBox(height: 24),
@@ -193,9 +197,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               readOnly: true,
               onTap: () => _selectDate(context),
               validator: (value) {
-                if (_dobTouched && (value == null || value.trim().isEmpty)) {
-                  return 'Date of birth is required';
-                }
+                if (!_dobTouched) return null;
+                if (value == null || value.trim().isEmpty) return 'Date of birth is required';
                 return null;
               },
             ),
@@ -210,6 +213,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               onChange: (value) {
                 setState(() {
                   user.gender = value;
+                  _validateForm();
                 });
               },
             ),
@@ -219,13 +223,13 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
               child: ContinueButton(
                 text: "Continue",
-                onPressed: formValid
+                onPressed: _isButtonEnabled
                     ? () {
+                  _onContinue();
                   FocusScope.of(context).unfocus();
-                  widget.onContinue();
                 }
                     : null,
-                styleType: formValid
+                styleType: _isButtonEnabled
                     ? ButtonStyleType.enable
                     : ButtonStyleType.disable,
               ),

@@ -1,8 +1,10 @@
 import 'dart:io';
-import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:saathi/database/local/shared_pref_helper.dart';
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
+import 'dart:typed_data';
 
 class DBConnect {
   static const String USER_ID = 'user_id';
@@ -56,11 +58,7 @@ class DBConnect {
 
   static const String TABLE_INTERESTS = 'interests';
   static const String INTEREST_ID = 'interest_id';
-  static const String HOBBIES = 'hobbies';
-  static const String SPORTS = 'sports';
-  static const String MUSIC = 'music';
-  static const String MOVIES = 'movies';
-  static const String OTHER_INTERESTS = 'other_interests';
+  static const String INTERESTS = 'INTERESTS';
 
   static const String TABLE_PHOTOS = 'photos';
   static const String PHOTO_ID = 'photo_id';
@@ -98,9 +96,9 @@ class DBConnect {
           $CITY TEXT,
           $STATE TEXT,
           $MARITAL_STATUS TEXT,
-          $HEIGHT REAL,
+          $HEIGHT TEXT,
           $DIET TEXT,
-          $BIO TEXT,
+          $BIO TEXT
         )
       ''');
 
@@ -149,11 +147,7 @@ class DBConnect {
         CREATE TABLE $TABLE_INTERESTS (
           $INTEREST_ID INTEGER PRIMARY KEY AUTOINCREMENT,
           $USER_ID INTEGER,
-          $HOBBIES TEXT,
-          $SPORTS TEXT,
-          $MUSIC TEXT,
-          $MOVIES TEXT,
-          $OTHER_INTERESTS TEXT,
+          $INTERESTS TEXT, 
           FOREIGN KEY ($USER_ID) REFERENCES $TABLE_USERS($USER_ID) ON DELETE CASCADE
         )
       ''');
@@ -169,9 +163,14 @@ class DBConnect {
       ''');
     });
   }
+
   Future<int> insertUser(Map<String, dynamic> userData) async {
     final db = await getDB();
-    return await db.insert('users', userData);
+    int userId = await db.insert('users', userData);
+    if (userId > 0) {
+      await SharedPrefHelper.saveUserId(userId);
+    }
+    return userId;
   }
 
   Future<int> insertPreference(Map<String, dynamic> preferenceData) async {
@@ -189,18 +188,231 @@ class DBConnect {
     return await db.insert('profession', professionData);
   }
 
-  Future<int> insertInterest(Map<String, dynamic> interestData) async {
+  Future<int> insertInterest(int userId, List<String> interests) async {
     final db = await getDB();
+
+    Map<String, dynamic> interestData = {
+      USER_ID: userId,
+      INTERESTS: jsonEncode(interests),
+    };
     return await db.insert('interests', interestData);
   }
 
-  Future<int> insertPhoto(int userId, Uint8List photoData, {bool isProfile = false}) async {
+
+  Future<int> insertPhoto(int userId, Uint8List photoData,
+      {bool isProfile = false}) async {
     final db = await getDB();
     return await db.insert('photos', {
       'user_id': userId,
       'photo_data': photoData,
       'uploaded_at': DateTime.now().toIso8601String(),
-      'is_profile_picture': isProfile ? 1 : 0,
     });
+  }
+
+  Future<List<int>> getAllUserIds() async {
+    final db = await getDB();
+    List<Map<String, dynamic>> result = await db.query(
+      TABLE_USERS,
+      columns: [USER_ID],
+    );
+    return result.map((row) => row[USER_ID] as int).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final db = await getDB();
+    return await db.query(TABLE_USERS);
+  }
+
+  Future<Map<String, dynamic>?> getUser(int userId) async {
+    final db = await getDB();
+    List<Map<String, dynamic>> result = await db.query(
+      TABLE_USERS,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  Future<Map<String, dynamic>?> getPreferences(int userId) async {
+    final db = await getDB();
+    List<Map<String, dynamic>> result = await db.query(
+      TABLE_PREFERENCES,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  Future<Map<String, dynamic>?> getEducation(int userId) async {
+    final db = await getDB();
+    List<Map<String, dynamic>> result = await db.query(
+      TABLE_EDUCATION,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  Future<Map<String, dynamic>?> getProfession(int userId) async {
+    final db = await getDB();
+    List<Map<String, dynamic>> result = await db.query(
+      TABLE_PROFESSION,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  Future<List<String>> getInterests(int userId) async {
+    final db = await getDB();
+    List<Map<String, dynamic>> result = await db.query(
+      TABLE_INTERESTS,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+
+    if (result.isEmpty) return [];
+    return List<String>.from(jsonDecode(result.first[INTERESTS] ?? '[]'));
+  }
+
+  Future<List<Map<String, dynamic>>> getAllUsersWithPhoto() async {
+    final db = await getDB();
+
+    List<Map<String, dynamic>> users = await db.query(TABLE_USERS);
+    List<Map<String, dynamic>> usersWithPhotos = [];
+
+    for (var user in users) {
+      Map<String, dynamic> userData = Map<String, dynamic>.from(user);
+
+      List<Map<String, dynamic>> photos = await db.query(
+        TABLE_PHOTOS,
+        where: "$USER_ID = ?",
+        whereArgs: [user[USER_ID]],
+      );
+
+      // Use only the first photo if available
+      userData['PHOTO'] = photos.isNotEmpty ? photos.first[PHOTO_DATA] : null;
+
+      usersWithPhotos.add(userData);
+    }
+
+    // Reverse the list to get the last row data at index 0
+    return usersWithPhotos.reversed.toList();
+  }
+
+  Future<void> deleteUser(int userId) async {
+    final db = await getDB();
+
+    // Start a transaction to ensure atomicity
+    await db.transaction((txn) async {
+      // Delete from the photos table
+      await txn.delete(
+        TABLE_PHOTOS,
+        where: '$USER_ID = ?',
+        whereArgs: [userId],
+      );
+
+      // Delete from the interests table
+      await txn.delete(
+        TABLE_INTERESTS,
+        where: '$USER_ID = ?',
+        whereArgs: [userId],
+      );
+
+      // Delete from the profession table
+      await txn.delete(
+        TABLE_PROFESSION,
+        where: '$USER_ID = ?',
+        whereArgs: [userId],
+      );
+
+      // Delete from the education table
+      await txn.delete(
+        TABLE_EDUCATION,
+        where: '$USER_ID = ?',
+        whereArgs: [userId],
+      );
+
+      // Delete from the preferences table
+      await txn.delete(
+        TABLE_PREFERENCES,
+        where: '$USER_ID = ?',
+        whereArgs: [userId],
+      );
+
+      // Finally, delete from the users table
+      await txn.delete(
+        TABLE_USERS,
+        where: '$USER_ID = ?',
+        whereArgs: [userId],
+      );
+    });
+  }
+
+  Future<int> updateUser(int userId, Map<String, dynamic> userData) async {
+    final db = await getDB();
+    return await db.update(
+      TABLE_USERS,
+      userData,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<int> updatePreferences(
+      int userId, Map<String, dynamic> preferenceData) async {
+    final db = await getDB();
+    return await db.update(
+      TABLE_PREFERENCES,
+      preferenceData,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<int> updateEducation(
+      int userId, Map<String, dynamic> educationData) async {
+    final db = await getDB();
+    return await db.update(
+      TABLE_EDUCATION,
+      educationData,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<int> updateProfession(
+      int userId, Map<String, dynamic> professionData) async {
+    final db = await getDB();
+    return await db.update(
+      TABLE_PROFESSION,
+      professionData,
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<int> updateInterest(int userId, List<String> interests) async {
+    final db = await getDB();
+
+    return await db.update(
+      TABLE_INTERESTS,
+      {'interests': jsonEncode(interests)},
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<int> updatePhoto(int userId, Uint8List photoData) async {
+    final db = await getDB();
+    return await db.update(
+      TABLE_PHOTOS,
+      {
+        'photo_data': photoData,
+        'uploaded_at': DateTime.now().toIso8601String(),
+      },
+      where: '$USER_ID = ?',
+      whereArgs: [userId],
+    );
   }
 }

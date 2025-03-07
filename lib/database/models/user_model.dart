@@ -16,8 +16,6 @@ class UserModel {
   String maritalStatus = '';
   String height = '';
   String diet = '';
-  String highestQualification = '';
-  String college = '';
   String bio = '';
 
   UserModel._();
@@ -41,8 +39,6 @@ class UserModel {
       MARITAL_STATUS: maritalStatus,
       HEIGHT: height,
       DIET: diet,
-      HIGHEST_QUALIFICATION: highestQualification,
-      COLLEGE: college,
       BIO: bio,
     };
   }

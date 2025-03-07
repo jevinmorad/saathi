@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:saathi/forms/form_pages/bio_details.dart';
+import 'package:saathi/forms/form_pages/hobbies_page.dart';
 import 'package:saathi/forms/form_pages/living_details.dart';
 import 'package:saathi/forms/form_pages/marital_status.dart';
 import 'package:saathi/forms/form_pages/personal_details.dart';
@@ -61,12 +62,13 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 physics: NeverScrollableScrollPhysics(),
                 children: [
                   PersonalDetails(onContinue: _nextPage),
-                  ReligionDetails(onContinue: _nextPage,),
                   SecurityDetails(onContinue: _nextPage),
+                  ReligionDetails(onContinue: _nextPage),
                   LivingDetails(onContinue: _nextPage),
                   MaritalStatus(onContinue: _nextPage),
-                  ProfilePhoto(onContinue: _nextPage),
                   BioDetails(onContinue: _nextPage),
+                  ProfilePhoto(onContinue: _nextPage),
+                  HobbiesPage(onContinue: _nextPage),
                 ],
               ),
             ),

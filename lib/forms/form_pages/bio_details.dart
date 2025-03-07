@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:saathi/database/local/db_connection.dart';
 import 'package:saathi/database/models/user_model.dart';
 
 import '../components/button.dart';
@@ -18,8 +19,30 @@ class _BioDetailsState extends State<BioDetails> {
 
   final UserModel user = UserModel.getInstance;
 
+  DBConnect dbConnect = DBConnect.getInstance;
+
   final TextEditingController _bioController = TextEditingController();
   final FocusNode _bioFocus = FocusNode();
+
+  Future<void> saveUserData() async {
+    try {
+      // Convert user model to map and insert into the database
+      int userId = await dbConnect.insertUser(user.toMap());
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("User added successfully! ID: $userId")),
+      );
+
+      // Navigate to the next page or close the form
+      widget.onContinue();
+    } catch (error) {
+      // Show error message if saving fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving user: $error")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +71,7 @@ class _BioDetailsState extends State<BioDetails> {
               controller: _bioController,
               label: 'Write about yourself here',
               maxLength: 40000,
+              maxLine: 7,
               focusNode: _bioFocus,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -68,9 +92,10 @@ class _BioDetailsState extends State<BioDetails> {
               child: ContinueButton(
                 text: "Continue",
                 styleType: ButtonStyleType.enable,
-                onPressed: () {
+                onPressed: () async {
                   if(formKey.currentState!.validate()) {
-                    widget.onContinue;
+                    await saveUserData();
+                    widget.onContinue();
                   }
                 },
               ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:saathi/database/models/user_model.dart';
+import 'package:saathi/database/models/qualification_model.dart';
 import 'package:saathi/forms/components/drop_down.dart';
 import '../components/button.dart';
 import '../components/center_icon.dart';
@@ -15,7 +15,7 @@ class QualificationDetails extends StatefulWidget {
 }
 
 class _QualificationDetailsState extends State<QualificationDetails> {
-  final UserModel user = UserModel.getInstance;
+  final QualificationModel qualificationDetails = QualificationModel.getInstance;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   List<String> qualificationOptions = [
@@ -40,7 +40,7 @@ class _QualificationDetailsState extends State<QualificationDetails> {
   final FocusNode _collegeFocus = FocusNode();
 
   bool get isFormValid =>
-      user.highestQualification.isNotEmpty;
+      qualificationDetails.highestQualification.isNotEmpty;
 
   void _validateForm() {
     setState(() {});
@@ -74,10 +74,10 @@ class _QualificationDetailsState extends State<QualificationDetails> {
               label: 'your highest qualification',
               hintText: 'Select your highest qualification',
               items: qualificationOptions,
-              selectedValue: user.highestQualification,
+              selectedValue: qualificationDetails.highestQualification,
               onChange: (value) {
                 setState(() {
-                  user.highestQualification = value;
+                  qualificationDetails.highestQualification = value;
                 });
                 _validateForm();
               },
@@ -94,7 +94,7 @@ class _QualificationDetailsState extends State<QualificationDetails> {
               textCapitalization: TextCapitalization.words,
               onChange: (value) {
                 setState(() {
-                  user.college = value!;
+                  qualificationDetails.college = value!;
                 });
               },
             ),

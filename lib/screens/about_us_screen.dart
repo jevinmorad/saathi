@@ -228,13 +228,13 @@ class AboutUsScreen extends StatelessWidget {
                       children: [
                         Expanded(
                             child: Image.asset(
-                              'assets/images/about_use_screen_images/darshanlogo-removebg-preview.png',
+                              'assets/images/about_us_screen_images/darshanlogo-removebg-preview.png',
                               height: 180,
                               width: 180,
                             )),
                         Expanded(
                             child: Image.asset(
-                              'assets/images/about_use_screen_images/aswdc.png',
+                              'assets/images/about_us_screen_images/aswdc.png',
                               height: 180,
                               width: 180,
                             ))
@@ -538,7 +538,7 @@ class AboutUsScreen extends StatelessWidget {
             ),
             const Text("All Right Reserverd - Privacy Policy",
                 style: TextStyle(fontFamily: 'Roboto')),
-            const Text("Made With 💝 in INDIA",
+            const Text("Made in INDIA",
                 style: TextStyle(fontFamily: 'Roboto')),
             const SizedBox(
               height: 20,

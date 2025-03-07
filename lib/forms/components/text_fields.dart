@@ -23,12 +23,14 @@ Widget textField({
   void Function(String?)? onChange,
   void Function(String?)? onFieldSubmitted,
   void Function()? onTap,
+  int maxLine = 1,
 }) {
   return TextFormField(
     controller: controller,
     keyboardType: keyboardType,
     textCapitalization: textCapitalization,
     obscureText: obscureText,
+    maxLines: maxLine,
     validator: validator,
     readOnly: readOnly,
     onChanged: onChange,
@@ -38,6 +40,7 @@ Widget textField({
     textInputAction: nextFocusNode != null ? TextInputAction.next : TextInputAction.done,
     onFieldSubmitted: onFieldSubmitted,
     cursorColor: Colors.cyan,
+    textAlignVertical: TextAlignVertical.top,
     decoration: InputDecoration(
       counterText: counterText,
       labelText: label,

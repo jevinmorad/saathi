@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:saathi/database/local/db_connection.dart';
+import 'package:saathi/database/local/shared_pref_helper.dart';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:saathi/forms/components/button.dart';
 
@@ -16,12 +19,23 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
   File? _image;
   final ImagePicker _picker = ImagePicker();
 
+  Future<int?> getCurrentUserId() async {
+    return await SharedPrefHelper.getUserId();
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
       setState(() {
-        _image = File(pickedFile.path);
+        _image = imageFile;
       });
+
+      Uint8List imageBytes = await imageFile.readAsBytes();
+
+      int? userId = await getCurrentUserId();
+
+      await DBConnect.getInstance.insertPhoto(userId!, imageBytes);
       widget.onContinue();
     }
   }
@@ -32,7 +46,6 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Content before the TextButton "Add Photos Later"
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

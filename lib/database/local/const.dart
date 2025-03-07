@@ -49,11 +49,7 @@ const String INCOME = 'income';
 
 const String TABLE_INTERESTS = 'interests';
 const String INTEREST_ID = 'interest_id';
-const String HOBBIES = 'hobbies';
-const String SPORTS = 'sports';
-const String MUSIC = 'music';
-const String MOVIES = 'movies';
-const String OTHER_INTERESTS = 'other_interests';
+const String INTERESTS = 'INTERESTS';
 
 const String TABLE_PHOTOS = 'photos';
 const String PHOTO_ID = 'photo_id';

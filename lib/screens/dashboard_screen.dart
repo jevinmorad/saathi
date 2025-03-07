@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:saathi/user_list.dart';
-import 'package:saathi/user_list_screen.dart';
+import 'package:saathi/screens/UserSwipeScreen.dart';
 import 'about_us_screen.dart';
-import '../favourite_screen.dart';
 import 'add_user_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -10,8 +8,6 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userList = UserList();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -45,7 +41,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserListScreen(userList: userList)),
+                  MaterialPageRoute(builder: (context) => UserSwipeScreen()),
                 );
               },
             ),
@@ -53,12 +49,7 @@ class DashboardScreen extends StatelessWidget {
               icon: Icons.favorite,
               label: 'User List',
               color: Colors.pink,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FavouriteScreen(userList: userList,)),
-                );
-              },
+              onPressed: () {},
             ),
             _dashboardButton(
               icon: Icons.info,

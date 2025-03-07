@@ -48,7 +48,9 @@ class _SecurityDetailsState extends State<SecurityDetails> {
       }
     });
 
-    _validateForm();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _validateForm();
+    });
   }
 
   @override
@@ -62,12 +64,15 @@ class _SecurityDetailsState extends State<SecurityDetails> {
 
   void _validateForm() {
     bool isValid = formKey.currentState?.validate() ?? false;
-    setState(() => _isButtonEnable = isValid);
+    bool isMobileValid = _mobileNumberController.text.length == 10;
+
+    setState(() => _isButtonEnable = isValid && isMobileValid);
   }
 
   void _onContinue() {
     if (formKey.currentState?.validate() ?? false) {
-      formKey.currentState?.save();
+      user.email = _emailController.text;
+      user.mobile = _mobileNumberController.text;
       widget.onContinue();
     }
   }
@@ -75,7 +80,7 @@ class _SecurityDetailsState extends State<SecurityDetails> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 25),
+      padding: const EdgeInsets.symmetric(horizontal: 25),
       child: Form(
         key: formKey,
         child: Column(
@@ -84,19 +89,18 @@ class _SecurityDetailsState extends State<SecurityDetails> {
             // Center Icon Section
             Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 child: centerSvgIcon(
-                  text:
-                  'An active email ID & phone no. are required to secure your profile',
+                  text: 'An active email ID & phone no. are required to secure your profile',
                   path: 'assets/images/form_icons/iconPageThree.svg',
                 ),
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             // Email Section
             sectionTitle(title: 'Email'),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             textField(
               controller: _emailController,
               label: 'Email',
@@ -106,26 +110,22 @@ class _SecurityDetailsState extends State<SecurityDetails> {
               validator: (value) {
                 if (!_emailTouched) return null;
                 if (value == null || value.isEmpty) return 'Email is required';
-                if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-                    .hasMatch(value)) {
+                if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
                   return 'Enter a valid email address';
                 }
                 return null;
               },
-              onChange: (value) {
-                user.email = value!;
-                _validateForm();
-              },
+              onChange: (value) => _validateForm(),
               onFieldSubmitted: (_) {
                 setState(() => _emailTouched = true);
                 FocusScope.of(context).requestFocus(_mobileNumberFocusNode);
               },
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             // Mobile Number Section
             sectionTitle(title: 'Mobile no.'),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             textField(
               controller: _mobileNumberController,
               label: 'Mobile no.',
@@ -139,18 +139,24 @@ class _SecurityDetailsState extends State<SecurityDetails> {
                 if (value.length != 10) return 'Enter a valid 10-digit mobile number';
                 return null;
               },
-              onChange: (value) {
-                user.mobile = value!;
+              onChange: (value) => _validateForm(),
+              onFieldSubmitted: (_) {
+                setState(() => _mobileNumberTouched = true);
                 _validateForm();
               },
             ),
 
             // Continue Button Section
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
               child: ContinueButton(
                 text: "Continue",
-                onPressed: _isButtonEnable ? _onContinue : null,
+                onPressed: _isButtonEnable
+                    ? () {
+                  _onContinue();
+                  FocusScope.of(context).unfocus();
+                }
+                    : null,
                 styleType: _isButtonEnable
                     ? ButtonStyleType.enable
                     : ButtonStyleType.disable,

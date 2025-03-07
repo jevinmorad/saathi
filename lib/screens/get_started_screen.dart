@@ -114,7 +114,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => DashboardScreen(),

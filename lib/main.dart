@@ -7,6 +7,7 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.grey[400],
   ));
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 

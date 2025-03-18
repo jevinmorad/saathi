@@ -3,19 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:saathi/api/api_services.dart';
 import 'package:saathi/database/local/const.dart';
 import 'package:saathi/forms/components/hobby_icons.dart';
-import 'package:saathi/forms/edit_pages/basic_details_edit.dart';
-import 'package:saathi/forms/edit_pages/bio_details_edit.dart';
-import 'package:saathi/forms/edit_pages/contact_details_edit.dart';
-import 'package:saathi/forms/edit_pages/hobbies_edit.dart';
 
-class UserSwipeScreen extends StatefulWidget {
-  const UserSwipeScreen({super.key});
+class FavouriteScreen extends StatefulWidget {
+  const FavouriteScreen({super.key});
 
   @override
-  State<UserSwipeScreen> createState() => _UserSwipeScreenState();
+  State<FavouriteScreen> createState() => _FavouriteScreenState();
 }
 
-class _UserSwipeScreenState extends State<UserSwipeScreen> {
+class _FavouriteScreenState extends State<FavouriteScreen> {
   final PageController _pageController = PageController();
   List<Map<String, dynamic>> users = [];
   bool isExpanded = false;
@@ -27,9 +23,16 @@ class _UserSwipeScreenState extends State<UserSwipeScreen> {
   }
 
   Future<void> _loadUsers() async {
-    final fetchedUsers = await ApiService().getUsers(context);
+    List<Map<String, dynamic>>? fetchedUsers =
+    await ApiService().getUsers(context);
     if (fetchedUsers != null) {
-      setState(() => users = fetchedUsers.reversed.toList());
+      setState(() {
+        users = fetchedUsers
+            .where((user) => user['isFavourite'] == '1')
+            .toList()
+            .reversed
+            .toList();
+      });
     }
   }
 
@@ -209,14 +212,15 @@ class _BioSectionState extends State<_BioSection> {
                     "About ${widget.user[FNAME]} ${widget.user[LNAME][0]}",
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  _EditIcon(route: EditBio(user: widget.user), loadUsers: widget.loadUsers),
+                  /// Edit Icon
+                  // _EditIcon(route: EditBio(user: widget.user), loadUsers: widget.loadUsers),
                 ]
             ),
             const SizedBox(height: 12),
             Text(
               widget.user[BIO] ?? 'No description available',
               style: const TextStyle(fontSize: 16),
-              maxLines: _isExpanded ? null : 5,
+              maxLines: _isExpanded ? null : 4,
             ),
             const SizedBox(height: 10),
             Center(
@@ -245,39 +249,40 @@ class _BioSectionState extends State<_BioSection> {
   }
 }
 
-class _EditIcon extends StatelessWidget {
-  final Widget route;
-  final Function loadUsers;
-  const _EditIcon({required this.route, required this.loadUsers});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: const Color(0xFF3498DB), // Flat blue color
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: IconButton(
-        onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(builder: (context) => route));
-          loadUsers();
-        },
-        icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
-        tooltip: "Edit data",
-      ),
-    );
-  }
-}
+/// Edit Icon
+// class _EditIcon extends StatelessWidget {
+//   final Widget route;
+//   final Function loadUsers;
+//   const _EditIcon({required this.route, required this.loadUsers});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       width: 40,
+//       height: 40,
+//       decoration: BoxDecoration(
+//         color: const Color(0xFF3498DB), // Flat blue color
+//         borderRadius: BorderRadius.circular(30),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.1),
+//             spreadRadius: 1,
+//             blurRadius: 3,
+//             offset: const Offset(0, 1),
+//           ),
+//         ],
+//       ),
+//       child: IconButton(
+//         onPressed: () async {
+//           await Navigator.push(context, MaterialPageRoute(builder: (context) => route));
+//           loadUsers();
+//         },
+//         icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+//         tooltip: "Edit data",
+//       ),
+//     );
+//   }
+// }
 
 class _ActionButtons extends StatelessWidget {
   final Map<String, dynamic> user;
@@ -294,25 +299,18 @@ class _ActionButtons extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _FavouriteButton(user: user, loadUsers: loadUsers),
-          const SizedBox(width: 16),
-          _RemoveUserButton(user: user, loadUsers: loadUsers),
         ],
       ),
     );
   }
 }
 
-class _FavouriteButton extends StatefulWidget {
+class _FavouriteButton extends StatelessWidget {
   final Map<String, dynamic> user;
   final Function loadUsers;
 
   const _FavouriteButton({required this.user, required this.loadUsers});
 
-  @override
-  State<_FavouriteButton> createState() => _FavouriteButtonState();
-}
-
-class _FavouriteButtonState extends State<_FavouriteButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -330,9 +328,9 @@ class _FavouriteButtonState extends State<_FavouriteButton> {
       ),
       child: IconButton(
         onPressed: () async {
-          widget.user[IS_FAVOURITE] = widget.user[IS_FAVOURITE] == '0' ? '1' :'0';
-          ApiService().updateUser(map: widget.user, id: widget.user[ID], context: context);
-          setState(() {});
+          user[IS_FAVOURITE] = user[IS_FAVOURITE] == '0' ? '1' :'0';
+          await ApiService().updateUser(map: user, id: user[ID], context: context);
+          loadUsers();
         },
         style: IconButton.styleFrom(
           padding: const EdgeInsets.all(13),
@@ -340,156 +338,11 @@ class _FavouriteButtonState extends State<_FavouriteButton> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         ),
         icon: Icon(
-          widget.user[IS_FAVOURITE] == '0' ? Icons.favorite_outline_rounded : Icons.favorite_rounded,
+          user[IS_FAVOURITE] == '0' ? Icons.favorite_outline_rounded : Icons.favorite_rounded,
           color: Colors.white,
           size: 25,
         ),
       ),
-    );
-  }
-}
-
-class _RemoveUserButton extends StatelessWidget {
-  final Map<String, dynamic> user;
-  final Function loadUsers;
-
-  const _RemoveUserButton({required this.user, required this.loadUsers});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF34495E), // Dark slate color
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ElevatedButton(
-          onPressed: () => _showRemoveUserDialog(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.person_remove_rounded, color: Colors.white, size: 22),
-              SizedBox(width: 8),
-              Text(
-                "Remove User",
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Updated RemoveUserDialog with simpler colors
-  void _showRemoveUserDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.white,
-          elevation: 5,
-          title: Row(
-            children: [
-              const Icon(Icons.person_remove_rounded, color: Color(0xFF34495E), size: 28),
-              const SizedBox(width: 10),
-              Text(
-                'Remove User',
-                style: TextStyle(color: const Color(0xFF333333), fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Are you sure you want to remove this user from the system?',
-                  style: TextStyle(fontSize: 16, color: const Color(0xFF444444)),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F9FA),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE9ECEF), width: 1),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Color(0xFF3498DB), size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'This action cannot be undone. All user data will be permanently removed.',
-                          style: TextStyle(color: const Color(0xFF666666), fontSize: 14),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: const Color(0xFF6C757D), fontWeight: FontWeight.w600, fontSize: 15),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF34495E), // Dark slate color
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: () async {
-                  await ApiService().deleteUser(id: user[ID], context: context);
-                  if (context.mounted) Navigator.pop(context);
-                  loadUsers();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                child: const Text(
-                  'Remove User',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }
@@ -524,7 +377,8 @@ class _ContactDetailsSection extends StatelessWidget {
                     "Contact Details",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  _EditIcon(route: EditContactDetails(user: user), loadUsers: loadUsers,), // Reusable edit icon
+                  /// Edit icon
+                  // _EditIcon(route: EditContactDetails(user: user), loadUsers: loadUsers,), // Reusable edit icon
                 ],
               ),
               const SizedBox(height: 24),
@@ -581,7 +435,8 @@ class _BasicDetailsSection extends StatelessWidget {
                     "Basic Details",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  _EditIcon(route: EditBasicDetails(user: user), loadUsers: loadUsers,), // Reusable edit icon
+                  /// Edit icon
+                  // _EditIcon(route: EditBasicDetails(user: user), loadUsers: loadUsers,), // Reusable edit icon
                 ],
               ),
               const SizedBox(height: 24),
@@ -725,7 +580,8 @@ class _HobbiesSection extends StatelessWidget {
                     "Hobbies & Interest",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  _EditIcon(route: EditHobbiesPage(user: user), loadUsers: loadUsers), // Reusable edit icon
+                  /// Edit icon
+                  // _EditIcon(route: EditHobbiesPage(user: user), loadUsers: loadUsers), // Reusable edit icon
                 ],
               ),
               const SizedBox(height: 10),

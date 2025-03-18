@@ -17,7 +17,7 @@ class DropDown extends StatefulWidget {
   });
 
   @override
-  _DropDownState createState() => _DropDownState();
+  State<DropDown> createState() => _DropDownState();
 }
 
 class _DropDownState extends State<DropDown> {
@@ -29,10 +29,11 @@ class _DropDownState extends State<DropDown> {
   void initState() {
     super.initState();
     _selectedValue = widget.selectedValue;
-    _filteredItems = widget.items;
   }
 
   void _openBottomSheet(BuildContext context) {
+    _searchController.clear();
+    _filteredItems = widget.items;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -43,14 +44,13 @@ class _DropDownState extends State<DropDown> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return Padding(
+            return SingleChildScrollView(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Close Button (Separate Line)
                   Align(
                     alignment: Alignment.centerRight,
                     child: IconButton(
@@ -102,10 +102,14 @@ class _DropDownState extends State<DropDown> {
                         onChanged: (value) {
                           setState(() {
                             _filteredItems = widget.items
-                                .where((item) => item
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()))
+                                .where((item) => item.toLowerCase().contains(value.toLowerCase()))
                                 .toList();
+
+                            _filteredItems.sort((a, b) {
+                              int indexA = a.toLowerCase().indexOf(value.toLowerCase());
+                              int indexB = b.toLowerCase().indexOf(value.toLowerCase());
+                              return indexA.compareTo(indexB);
+                            });
                           });
                         },
                       ),
@@ -116,13 +120,12 @@ class _DropDownState extends State<DropDown> {
                   SizedBox(height: 10),
                   Divider(color: Colors.grey.shade300, thickness: 1),
 
-                  // Options List with Smaller Height Constraint
+                  // Options List
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height *
-                            0.5, // adjust as needed
+                        maxHeight: MediaQuery.of(context).size.height * 0.5,
                       ),
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -142,11 +145,15 @@ class _DropDownState extends State<DropDown> {
                                   widget.onChange(item);
                                   Navigator.pop(context);
                                 },
-                                visualDensity:
-                                    VisualDensity(horizontal: 0, vertical: -4),
+                                visualDensity: VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -4,
+                                ),
                               ),
                               Divider(
-                                  color: Colors.grey.shade200, thickness: 0.3),
+                                color: Colors.grey.shade200,
+                                thickness: 0.3,
+                              ),
                             ],
                           );
                         },
@@ -181,9 +188,7 @@ class _DropDownState extends State<DropDown> {
                   : widget.label,
               style: TextStyle(
                 fontSize: 16,
-                color: _selectedValue?.isNotEmpty == true
-                    ? Colors.black
-                    : Colors.black.withOpacity(0.5),
+                color: Colors.black.withOpacity(0.7),
               ),
             ),
             Icon(Icons.arrow_drop_down, color: Colors.grey),

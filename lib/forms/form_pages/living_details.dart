@@ -48,7 +48,6 @@ class _LivingDetailsState extends State<LivingDetails> {
     "Uttarakhand",
     "West Bengal",
   ];
-
   List<String> cityOptions = [
     "Ahmedabad",
     "Surat",
@@ -81,7 +80,6 @@ class _LivingDetailsState extends State<LivingDetails> {
     "Dwarka",
     "Somnath",
   ];
-
   List<String> subCommunityOptions = [
     "Patel - Leuva",
     "Patel - Kadva",

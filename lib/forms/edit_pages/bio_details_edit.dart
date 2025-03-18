@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:saathi/api/api_services.dart';
+import 'package:saathi/database/local/const.dart';
+import 'package:saathi/database/models/user_model.dart';
 import 'package:saathi/forms/components/button.dart';
 import 'package:saathi/forms/components/center_icon.dart';
 import 'package:saathi/forms/components/text_fields.dart';
 
 class EditBio extends StatefulWidget {
-  final String currentBio;
+  final Map<String, dynamic> user;
 
-  const EditBio({super.key, required this.currentBio});
+  const EditBio({super.key, required this.user});
 
   @override
   State<EditBio> createState() => _EditBioState();
@@ -17,10 +20,12 @@ class _EditBioState extends State<EditBio> {
   final TextEditingController _bioController = TextEditingController();
   final FocusNode _bioFocusNode = FocusNode();
 
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    _bioController.text = widget.currentBio;
+    _bioController.text = widget.user[BIO];
   }
 
   @override
@@ -91,10 +96,16 @@ class _EditBioState extends State<EditBio> {
             child: ContinueButton(
               text: "Confirm",
               styleType: ButtonStyleType.enable,
-              onPressed: () {
+              isLoading: _isLoading,
+              onPressed: () async {
+                FocusScope.of(context).unfocus();
+                setState(() {
+                  _isLoading = true;
+                });
                 if (_formKey.currentState!.validate()) {
-                  print('Returning updated bio: ${_bioController.text}');
-                  Navigator.pop(context, _bioController.text);
+                  widget.user[BIO] = _bioController.text;
+                  await ApiService().updateUser(context: context, id: widget.user[ID], map: widget.user);
+                  if(context.mounted) Navigator.pop(context);
                 }
               },
             ),

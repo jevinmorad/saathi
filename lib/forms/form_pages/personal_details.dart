@@ -154,7 +154,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               textCapitalization: TextCapitalization.words,
               validator: (value) {
                 if (!_firstNameTouched) return null;
-                if (value == null || value.trim().isEmpty) return 'First name is required';
+                if (value == null || value.trim().isEmpty) {
+                  return 'First name is required';
+                }
                 return null;
               },
               onChange: (value) {
@@ -175,7 +177,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               textCapitalization: TextCapitalization.words,
               validator: (value) {
                 if (!_lastNameTouched) return null;
-                if (value == null || value.trim().isEmpty) return 'Last name is required';
+                if (value == null || value.trim().isEmpty) {
+                  return 'Last name is required';
+                }
                 return null;
               },
               onChange: (value) {
@@ -198,7 +202,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               onTap: () => _selectDate(context),
               validator: (value) {
                 if (!_dobTouched) return null;
-                if (value == null || value.trim().isEmpty) return 'Date of birth is required';
+                if (value == null || value.trim().isEmpty) {
+                  return 'Date of birth is required';
+                }
                 return null;
               },
             ),
@@ -225,9 +231,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 text: "Continue",
                 onPressed: _isButtonEnabled
                     ? () {
-                  _onContinue();
-                  FocusScope.of(context).unfocus();
-                }
+                        _onContinue();
+                        FocusScope.of(context).unfocus();
+                      }
                     : null,
                 styleType: _isButtonEnabled
                     ? ButtonStyleType.enable

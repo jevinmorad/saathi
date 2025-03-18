@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:saathi/forms/components/center_icon.dart';
 import 'package:saathi/forms/components/text_fields.dart';
 import '../../database/models/user_model.dart';
@@ -131,6 +132,7 @@ class _SecurityDetailsState extends State<SecurityDetails> {
               label: 'Mobile no.',
               focusNode: _mobileNumberFocusNode,
               keyboardType: TextInputType.phone,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               maxLength: 10,
               counterText: "",
               validator: (value) {
@@ -153,6 +155,7 @@ class _SecurityDetailsState extends State<SecurityDetails> {
                 text: "Continue",
                 onPressed: _isButtonEnable
                     ? () {
+                  print(user);
                   _onContinue();
                   FocusScope.of(context).unfocus();
                 }

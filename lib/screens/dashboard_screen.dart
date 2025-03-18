@@ -1,102 +1,143 @@
 import 'package:flutter/material.dart';
 import 'package:saathi/screens/UserSwipeScreen.dart';
-import 'about_us_screen.dart';
+import 'package:saathi/screens/drawer.dart';
+import 'package:saathi/screens/favourite_screen.dart';
+import 'package:saathi/screens/search_screen.dart';
 import 'add_user_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _selectedIndex = 1;
+
+  final List<GlobalKey> _screenKeys = [
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+  ];
+
+  final List<Widget> _screens = [
+    AddUserScreen(),
+    UserSwipeScreen(),
+    SearchScreen(),
+    FavouriteScreen(),
+  ];
+
+  final List<String> _screensTitle = [
+    'Add User',
+    'Saathi',
+    'About Us',
+    'Favourites',
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      _screenKeys[index] = GlobalKey();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: _selectedIndex != 2 ? AppBar(
+        elevation: 0,
+        backgroundColor: Color(0xFF2C3E50),
         title: Text(
-          'Dashboard',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          _screensTitle[_selectedIndex],
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
-        backgroundColor: Colors.red,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: Colors.white),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.message_outlined, color: Colors.white),
+            onPressed: () {},
+          ),
+        ],
+      ) : null,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          KeyedSubtree(
+            key: _screenKeys[0],
+            child: _screens[0],
+          ),
+          KeyedSubtree(
+            key: _screenKeys[1],
+            child: _screens[1],
+          ),
+          KeyedSubtree(
+            key: _screenKeys[2],
+            child: _screens[2],
+          ),
+          KeyedSubtree(
+            key: _screenKeys[3],
+            child: _screens[3],
+          ),
+        ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: [
-            _dashboardButton(
-              icon: Icons.person_add,
-              label: 'Add User',
-              color: Colors.blue,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddUserScreen()),
-                );
-              },
-            ),
-            _dashboardButton(
-              icon: Icons.list,
-              label: 'User List',
-              color: Colors.green,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UserSwipeScreen()),
-                );
-              },
-            ),
-            _dashboardButton(
-              icon: Icons.favorite,
-              label: 'User List',
-              color: Colors.pink,
-              onPressed: () {},
-            ),
-            _dashboardButton(
-              icon: Icons.info,
-              label: 'About Us',
-              color: Colors.orange,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutUsScreen()),
-                );
-              },
+      drawer: CustomDrawer(),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 10,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _dashboardButton(
-      {required IconData icon,
-      required String label,
-      required Color color,
-      required VoidCallback onPressed}) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          elevation: 10,
+          selectedItemColor: Color(0xFFE83E8C),
+          unselectedItemColor: Color(0xFF6c757d),
+          backgroundColor: Colors.white,
+          selectedLabelStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 11,
+          ),
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.app_registration_outlined),
+              activeIcon: Icon(Icons.app_registration_rounded, color: Color(0xFFE83E8C)),
+              label: 'Create',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.people_alt_outlined),
+              activeIcon: Icon(Icons.people_alt, color: Color(0xFFE83E8C)),
+              label: 'Matches',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search_outlined),
+              activeIcon: Icon(Icons.search_rounded, color: Color(0xFFE83E8C)),
+              label: 'Search',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_outline_rounded),
+              activeIcon: Icon(Icons.favorite_outlined, color: Color(0xFFE83E8C)),
+              label: 'Favorites',
+            ),
+          ],
         ),
-        elevation: 4,
-        padding: EdgeInsets.all(16),
-      ),
-      onPressed: onPressed,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 48.0,
-            color: color,
-          ),
-          SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-        ],
       ),
     );
   }

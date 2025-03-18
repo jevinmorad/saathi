@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:saathi/screens/get_started_screen.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarColor: Colors.grey[400],
-  ));
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:saathi/database/local/db_connection.dart';
+import 'package:saathi/api/api_services.dart';
+import 'package:saathi/database/local/const.dart';
 import 'package:saathi/forms/components/button.dart';
 import 'package:saathi/forms/components/hobby_icons.dart';
 import 'package:saathi/forms/form_pages/hobbies_page.dart';
 
 class EditHobbiesPage extends StatefulWidget {
-  final int userId;
-  const EditHobbiesPage({super.key, required this.userId});
+  final Map<String, dynamic> user;
+  const EditHobbiesPage({super.key, required this.user});
 
   @override
   State<EditHobbiesPage> createState() => _EditHobbiesPageState();
@@ -84,8 +85,7 @@ class _EditHobbiesPageState extends State<EditHobbiesPage> {
 
   Future<void> _loadSelectedHobbies() async {
     // Fetch the user's selected hobbies
-    final List<String> selectedHobbies =
-    await DBConnect.getInstance.getInterests(widget.userId);
+    final List<String> selectedHobbies = widget.user[HOBBIES].split(' ');
 
     // Mark the selected hobbies in the _categories list
     for (var category in _categories) {
@@ -102,18 +102,18 @@ class _EditHobbiesPageState extends State<EditHobbiesPage> {
   }
 
   void _saveSelectedHobbies() async {
-    // Collect all selected hobbies
-    List<String> selectedHobbies = _categories
+    String selectedHobbies = _categories
         .expand((category) => category.interests)
         .where((interest) => interest.selected)
         .map((interest) => interest.hobby.name)
-        .toList();
+        .join(' ');
 
-    // Update the database
-    await DBConnect.getInstance.insertInterest(widget.userId, selectedHobbies);
+    widget.user[HOBBIES] = selectedHobbies;
 
-    // Return to the previous screen with the updated hobbies
-    Navigator.pop(context, selectedHobbies);
+    await ApiService()
+        .updateUser(map: widget.user, id: widget.user[ID], context: context);
+
+    Navigator.pop(context);
   }
 
   bool get _hasSelectedAny {
@@ -138,34 +138,38 @@ class _EditHobbiesPageState extends State<EditHobbiesPage> {
           styleType: _hasSelectedAny
               ? ButtonStyleType.enable
               : ButtonStyleType.disable,
-          onPressed: _hasSelectedAny ? _saveSelectedHobbies : null,
+          isLoading: _isLoading,
+          onPressed: _hasSelectedAny
+              ? () => {
+                    setState(() => _isLoading = true),
+                    _saveSelectedHobbies(),
+                  }
+              : null,
           text: 'Continue',
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title text
-              Text(
-                "Now let's add your hobbies & interests",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "This will help find better Matches",
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(height: 16),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title text
+            Text(
+              "Now let's add your hobbies & interests",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "This will help find better Matches",
+              style: TextStyle(color: Colors.grey),
+            ),
+            SizedBox(height: 16),
 
-              // Build each category
-              ..._categories.map((category) {
-                return _buildCategoryCard(category);
-              }),
-            ],
-          ),
+            // Build each category
+            ..._categories.map((category) {
+              return _buildCategoryCard(category);
+            }),
+          ],
         ),
       ),
     );
@@ -217,31 +221,31 @@ class _EditHobbiesPageState extends State<EditHobbiesPage> {
                     .take(displayedCount)
                     .map(
                       (interest) => FilterChip(
-                    avatar: Icon(
-                      interest.icon,
-                      size: 18,
-                      color: interest.selected
-                          ? Colors.white
-                          : Color(0xFF8C2A60),
-                    ),
-                    label: Text(
-                      interest.name,
-                      style: TextStyle(
-                        color:
-                        interest.selected ? Colors.white : Colors.black,
+                        avatar: Icon(
+                          interest.icon,
+                          size: 18,
+                          color: interest.selected
+                              ? Colors.white
+                              : Color(0xFF8C2A60),
+                        ),
+                        label: Text(
+                          interest.name,
+                          style: TextStyle(
+                            color:
+                                interest.selected ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        selected: interest.selected,
+                        selectedColor: Color(0xFF8C2A60),
+                        backgroundColor: Colors.white,
+                        showCheckmark: false,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            interest.selected = selected;
+                          });
+                        },
                       ),
-                    ),
-                    selected: interest.selected,
-                    selectedColor: Color(0xFF8C2A60),
-                    backgroundColor: Colors.white,
-                    showCheckmark: false,
-                    onSelected: (bool selected) {
-                      setState(() {
-                        interest.selected = selected;
-                      });
-                    },
-                  ),
-                )
+                    )
                     .toList(),
               ),
 

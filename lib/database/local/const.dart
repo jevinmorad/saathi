@@ -1,5 +1,5 @@
-const String USER_ID = 'user_id';
-
+// const String USER_ID = 'user_id';
+const String ID = 'id';
 const String TABLE_USERS = 'users';
 const String FNAME = 'first_name';
 const String LNAME = 'last_name';
@@ -17,6 +17,9 @@ const String MARITAL_STATUS = 'marital_status';
 const String HEIGHT = 'height';
 const String DIET = 'diet';
 const String BIO = 'bio';
+const String HOBBIES = 'hobbies';
+const String IMAGE_URL = 'image_url';
+const String IS_FAVOURITE = 'isFavourite';
 
 const String TABLE_PREFERENCES = 'preferences';
 const String PREFERENCE_ID = 'preference_id';

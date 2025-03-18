@@ -24,24 +24,32 @@ class _BioDetailsState extends State<BioDetails> {
   final TextEditingController _bioController = TextEditingController();
   final FocusNode _bioFocus = FocusNode();
 
-  Future<void> saveUserData() async {
-    try {
-      // Convert user model to map and insert into the database
-      int userId = await dbConnect.insertUser(user.toMap());
+  /// save in database
+  // Future<void> saveUserData() async {
+  //   try {
+  //     // Convert user model to map and insert into the database
+  //     int userId = await dbConnect.insertUser(user.toMap());
+  //
+  //     // Show success message
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("User added successfully! ID: $userId")),
+  //     );
+  //
+  //     widget.onContinue();
+  //   } catch (error) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("Error saving user: $error")),
+  //     );
+  //   }
+  // }
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("User added successfully! ID: $userId")),
-      );
+  @override
+  void initState() {
+    super.initState();
 
-      // Navigate to the next page or close the form
-      widget.onContinue();
-    } catch (error) {
-      // Show error message if saving fails
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error saving user: $error")),
-      );
-    }
+    setState(() {
+      _bioController.text = user.bio;
+    });
   }
 
   @override
@@ -94,7 +102,8 @@ class _BioDetailsState extends State<BioDetails> {
                 styleType: ButtonStyleType.enable,
                 onPressed: () async {
                   if(formKey.currentState!.validate()) {
-                    await saveUserData();
+                    /// local database save method
+                    // await saveUserData();
                     widget.onContinue();
                   }
                 },

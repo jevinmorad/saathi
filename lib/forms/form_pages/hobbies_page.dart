@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:saathi/database/local/db_connection.dart';
-import 'package:saathi/database/local/shared_pref_helper.dart';
+import 'package:saathi/api/api_services.dart';
+import 'package:saathi/database/models/user_model.dart';
 import 'package:saathi/forms/components/button.dart';
 import 'package:saathi/forms/components/hobby_icons.dart';
 import 'package:saathi/screens/dashboard_screen.dart';
@@ -10,10 +10,13 @@ class HobbiesPage extends StatefulWidget {
   const HobbiesPage({super.key, required this.onContinue});
 
   @override
-  _HobbiesPageState createState() => _HobbiesPageState();
+  State<HobbiesPage> createState() => _HobbiesPageState();
 }
 
 class _HobbiesPageState extends State<HobbiesPage> {
+  UserModel user = UserModel.getInstance;
+  bool _isLoading = false;
+
   final List<InterestCategory> _categories = [
     InterestCategory(
       title: 'Creative',
@@ -75,85 +78,85 @@ class _HobbiesPageState extends State<HobbiesPage> {
     ),
   ];
 
-
   // Check how many total items are selected
   bool get _hasSelectedAny {
     return _categories
         .any((cat) => cat.interests.any((interest) => interest.selected));
   }
 
-  Future<int?> getCurrentUserId() async {
-    return await SharedPrefHelper.getUserId();
-  }
-
   Future<void> saveSelectedHobbies() async {
-    final int? userId = await getCurrentUserId();
-
-    if (userId == null) {
-      print("❌ No user ID found! Cannot save hobbies.");
-      return;
-    }
-
-    // Collect all selected hobbies into a single list
-    List<String> selectedHobbies = _categories
+    user.hobbies = _categories
         .expand((category) => category.interests)
         .where((interest) => interest.selected)
         .map((interest) => interest.hobby.name)
-        .toList();
+        .join(' ');
 
-    if (selectedHobbies.isNotEmpty) {
-      await DBConnect.getInstance.insertInterest(userId, selectedHobbies);
-      print("✅ Hobbies saved successfully for user $userId!");
-    } else {
-      print("⚠️ No hobbies selected.");
-    }
+    await saveModelData();
+    return;
   }
 
+  Future<void> saveModelData() async {
+    await ApiService().addUser(context: context, map: user.toMap());
+    user.clear();
+    return;
+  }
 
-  void _onContinue() {
-    saveSelectedHobbies();
+  Future<void> _onContinue() async {
+    setState(() {
+      _isLoading = true;
+    });
+    await saveSelectedHobbies();
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => DashboardScreen()));
+      context,
+      MaterialPageRoute(
+        builder: (context) => DashboardScreen(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),
-        child: ContinueButton(
-          styleType: _hasSelectedAny
-              ? ButtonStyleType.enable
-              : ButtonStyleType.disable,
-          onPressed: _hasSelectedAny ? _onContinue : null,
-          text: 'Continue',
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title text
-              Text(
-                "Now let's add your hobbies & interests",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "This will help find better Matches",
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(height: 16),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Title text
+                  Text(
+                    "Now let's add your hobbies & interests",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "This will help find better Matches",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  SizedBox(height: 16),
 
-              // Build each category
-              ..._categories.map((category) {
-                return _buildCategoryCard(category);
-              }),
-            ],
+                  // Build each category
+                  ..._categories.map((category) {
+                    return _buildCategoryCard(category);
+                  }),
+                ],
+              ),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20),
+            child: ContinueButton(
+              text: _isLoading ? '' : 'Continue',
+              styleType: _hasSelectedAny
+                  ? ButtonStyleType.enable
+                  : ButtonStyleType.disable,
+              onPressed: _hasSelectedAny && !_isLoading ? _onContinue : null,
+              isLoading: _isLoading,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -204,33 +207,31 @@ class _HobbiesPageState extends State<HobbiesPage> {
                     .take(displayedCount)
                     .map(
                       (interest) => FilterChip(
-                        avatar: Icon(
-                          interest.icon,
-                          size: 18,
-                          color: interest.selected
-                              ? Colors.white
-                              : Color(0xFF8C2A60),
-                        ),
-                        label: Text(
-                          interest.name,
-                          style: TextStyle(
-                            color:
-                                interest.selected ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        selected: interest.selected,
-                        selectedColor:
-                            Color(0xFF8C2A60),
-                        backgroundColor:
-                            Colors.white,
-                        showCheckmark: false,
-                        onSelected: (bool selected) {
-                          setState(() {
-                            interest.selected = selected;
-                          });
-                        },
+                    avatar: Icon(
+                      interest.icon,
+                      size: 18,
+                      color: interest.selected
+                          ? Colors.white
+                          : Color(0xFF8C2A60),
+                    ),
+                    label: Text(
+                      interest.name,
+                      style: TextStyle(
+                        color:
+                        interest.selected ? Colors.white : Colors.black,
                       ),
-                    )
+                    ),
+                    selected: interest.selected,
+                    selectedColor: Color(0xFF8C2A60),
+                    backgroundColor: Colors.white,
+                    showCheckmark: false,
+                    onSelected: (bool selected) {
+                      setState(() {
+                        interest.selected = selected;
+                      });
+                    },
+                  ),
+                )
                     .toList(),
               ),
 
@@ -259,9 +260,6 @@ class _HobbiesPageState extends State<HobbiesPage> {
   }
 }
 
-// -----------------------------
-// Models
-// -----------------------------
 class InterestCategory {
   final String title;
   final List<Interest> interests;
@@ -284,4 +282,3 @@ class Interest {
 
   IconData get icon => hobby.icon;
 }
-

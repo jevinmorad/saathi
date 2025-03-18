@@ -17,6 +17,9 @@ class UserModel {
   String height = '';
   String diet = '';
   String bio = '';
+  String hobbies = '';
+  String imageUrl = '';
+  String isFavourite = '0';
 
   UserModel._();
 
@@ -40,6 +43,31 @@ class UserModel {
       HEIGHT: height,
       DIET: diet,
       BIO: bio,
+      HOBBIES: hobbies,
+      IMAGE_URL: imageUrl,
+      IS_FAVOURITE: isFavourite,
     };
+  }
+
+  void clear() {
+    firstName = '';
+    lastName = '';
+    gender = '';
+    mobile = '';
+    email = '';
+    dateOfBirth = '';
+    religion = '';
+    community = '';
+    subCommunity = '';
+    livingIn = '';
+    city = '';
+    state = '';
+    maritalStatus = '';
+    height = '';
+    diet = '';
+    bio = '';
+    hobbies = '';
+    imageUrl = '';
+    isFavourite = '0';
   }
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:saathi/database/local/db_connection.dart';
-import 'package:saathi/database/local/shared_pref_helper.dart';
+import 'package:saathi/api/api_services.dart';
+import 'package:saathi/database/models/user_model.dart';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:saathi/forms/components/button.dart';
 
@@ -18,26 +17,61 @@ class ProfilePhoto extends StatefulWidget {
 class _ProfilePhotoState extends State<ProfilePhoto> {
   File? _image;
   final ImagePicker _picker = ImagePicker();
+  UserModel user = UserModel.getInstance;
 
-  Future<int?> getCurrentUserId() async {
-    return await SharedPrefHelper.getUserId();
+  bool _isButtonEnable = false;
+  bool _isLoading = false;
+  bool _hasImageChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  void _loadImage() {
+    final imageUrl = user.imageUrl;
+    if (imageUrl != '') {
+      setState(() {
+        _isButtonEnable = true;
+      });
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
       setState(() {
-        _image = imageFile;
+        _image = File(pickedFile.path);
+        _isButtonEnable = true;
+        _hasImageChanged = true;
       });
-
-      Uint8List imageBytes = await imageFile.readAsBytes();
-
-      int? userId = await getCurrentUserId();
-
-      await DBConnect.getInstance.insertPhoto(userId!, imageBytes);
-      widget.onContinue();
     }
+  }
+
+  Future<void> saveImage() async {
+    if (_image == null && !_hasImageChanged) {
+      widget.onContinue();
+      return;
+    }
+
+    setState(() {
+      _isLoading = true; // Show loader
+    });
+
+      if (_hasImageChanged) {
+        String imageUrl = await ApiService().uploadImageToServer(_image!);
+        user.imageUrl = imageUrl;
+      }
+
+      widget.onContinue();
+  }
+
+  Future<void> _removeImage() async {
+    if(user.imageUrl != '') {
+      await ApiService().removeImageFromServer(user.imageUrl);
+    }
+    widget.onContinue();
   }
 
   @override
@@ -55,9 +89,12 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
                     CircleAvatar(
                       radius: 60,
                       backgroundColor: Colors.grey[300],
-                      backgroundImage:
-                      _image != null ? FileImage(_image!) : null,
-                      child: _image == null
+                      foregroundImage: _image != null
+                          ? FileImage(_image!)
+                          : user.imageUrl != ''
+                          ? NetworkImage(user.imageUrl)
+                          : null,
+                      child: _image == null && user.imageUrl == ''
                           ? Icon(
                         Icons.person,
                         size: 60,
@@ -104,9 +141,23 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
                 TextButton.icon(
                   onPressed: () => _pickImage(ImageSource.camera),
                   icon: Icon(Icons.camera_alt, color: Colors.cyan),
-                  label: Text("Use Camera", style: TextStyle(color: Colors.cyan)),
+                  label:
+                  Text("Use Camera", style: TextStyle(color: Colors.cyan)),
                 ),
               ],
+            ),
+          ),
+
+          // Continue button
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20),
+            child: ContinueButton(
+              text: _isLoading ? '' : 'Continue',
+              styleType: _isButtonEnable
+                  ? ButtonStyleType.enable
+                  : ButtonStyleType.disable,
+              onPressed: _isButtonEnable && !_isLoading ? saveImage : null,
+              isLoading: _isLoading,
             ),
           ),
 
@@ -115,7 +166,7 @@ class _ProfilePhotoState extends State<ProfilePhoto> {
             padding: const EdgeInsets.all(16.0),
             child: TextButton(
               onPressed: () {
-                widget.onContinue();
+                _removeImage();
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,

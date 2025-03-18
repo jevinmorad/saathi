@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:saathi/api/api_services.dart';
 import 'package:saathi/database/local/const.dart';
 import 'package:saathi/forms/components/button.dart';
 import 'package:saathi/forms/components/center_icon.dart';
@@ -6,6 +7,7 @@ import 'package:saathi/forms/components/text_fields.dart';
 
 class EditContactDetails extends StatefulWidget {
   final Map<String, dynamic> user;
+
   const EditContactDetails({super.key, required this.user});
 
   @override
@@ -22,8 +24,7 @@ class _EditContactDetailsState extends State<EditContactDetails> {
   final FocusNode _mobileNumberFocusNode = FocusNode();
 
   bool _isButtonEnable = false;
-  bool _emailTouched = false;
-  bool _mobileNumberTouched = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -31,20 +32,6 @@ class _EditContactDetailsState extends State<EditContactDetails> {
 
     _emailController.text = widget.user[EMAIL];
     _mobileNumberController.text = widget.user[MOBILE];
-
-    _emailFocusNode.addListener(() {
-      if (!_emailFocusNode.hasFocus) {
-        setState(() => _emailTouched = true);
-        _validateForm();
-      }
-    });
-
-    _mobileNumberFocusNode.addListener(() {
-      if (!_mobileNumberFocusNode.hasFocus) {
-        setState(() => _mobileNumberTouched = true);
-        _validateForm();
-      }
-    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _validateForm();
@@ -89,15 +76,17 @@ class _EditContactDetailsState extends State<EditContactDetails> {
               // Center Icon Section
               Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                   child: centerSvgIcon(
-                    text: 'An active email ID & phone no. are required to secure your profile',
+                    text:
+                        'An active email ID & phone no. are required to secure your profile',
                     path: 'assets/images/form_icons/iconPageThree.svg',
                   ),
                 ),
               ),
               const SizedBox(height: 30),
-      
+
               // Email Section
               sectionTitle(title: 'Email'),
               const SizedBox(height: 20),
@@ -108,21 +97,22 @@ class _EditContactDetailsState extends State<EditContactDetails> {
                 nextFocusNode: _mobileNumberFocusNode,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  if (!_emailTouched) return null;
-                  if (value == null || value.isEmpty) return 'Email is required';
-                  if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                  if (value == null || value.isEmpty)
+                    return 'Email is required';
+                  if (!RegExp(
+                          r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                      .hasMatch(value)) {
                     return 'Enter a valid email address';
                   }
                   return null;
                 },
                 onChange: (value) => _validateForm(),
                 onFieldSubmitted: (_) {
-                  setState(() => _emailTouched = true);
                   FocusScope.of(context).requestFocus(_mobileNumberFocusNode);
                 },
               ),
               const SizedBox(height: 30),
-      
+
               // Mobile Number Section
               sectionTitle(title: 'Mobile no.'),
               const SizedBox(height: 24),
@@ -134,28 +124,40 @@ class _EditContactDetailsState extends State<EditContactDetails> {
                 maxLength: 10,
                 counterText: "",
                 validator: (value) {
-                  if (!_mobileNumberTouched) return null;
-                  if (value == null || value.isEmpty) return 'Mobile number is required';
-                  if (value.length != 10) return 'Enter a valid 10-digit mobile number';
+                  if (value == null || value.isEmpty)
+                    return 'Mobile number is required';
+                  if (value.length != 10)
+                    return 'Enter a valid 10-digit mobile number';
                   return null;
                 },
                 onChange: (value) => _validateForm(),
                 onFieldSubmitted: (_) {
-                  setState(() => _mobileNumberTouched = true);
                   _validateForm();
                 },
               ),
-      
+
               // Continue Button Section
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
                 child: ContinueButton(
+                  isLoading: _isLoading,
                   text: "Continue",
                   onPressed: _isButtonEnable
-                      ? () {
-                    FocusScope.of(context).unfocus();
-                    _onContinue();
-                  }
+                      ? () async {
+                          widget.user[EMAIL] = _emailController.text;
+                          widget.user[MOBILE] = _mobileNumberController.text;
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          await ApiService().updateUser(
+                            context: context,
+                            id: widget.user[ID],
+                            map: widget.user,
+                          );
+                          _onContinue();
+                        }
                       : null,
                   styleType: _isButtonEnable
                       ? ButtonStyleType.enable

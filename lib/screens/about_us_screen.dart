@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:saathi/screens/app_bar.dart';
 
 class AboutUsScreen extends StatelessWidget {
   const AboutUsScreen({super.key});
@@ -7,24 +8,6 @@ class AboutUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const SizedBox(
-              width: 10,
-            ),
-            Text(
-              'About Us',
-              style: const TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.red,
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -52,7 +35,7 @@ class AboutUsScreen extends StatelessWidget {
             ),
             const Center(
                 child: Text(
-                  "Jevin Morad",
+                  "Harsh Ramavat",
                   style: TextStyle(
                     color: Colors.orange,
                     fontSize: 20,
@@ -115,7 +98,7 @@ class AboutUsScreen extends StatelessWidget {
                         Expanded(
                             flex: 3,
                             child: Text(
-                              "Jevin Morad(23010101171)",
+                              "Harsh Ramavat(23010101221)",
                             )),
                       ],
                     ),

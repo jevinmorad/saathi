@@ -53,27 +53,25 @@ class _AddUserScreenState extends State<AddUserScreen> {
               )
             : null,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Flexible(
-              child: PageView(
-                controller: _pageController,
-                physics: NeverScrollableScrollPhysics(),
-                children: [
-                  PersonalDetails(onContinue: _nextPage),
-                  SecurityDetails(onContinue: _nextPage),
-                  ReligionDetails(onContinue: _nextPage),
-                  LivingDetails(onContinue: _nextPage),
-                  MaritalStatus(onContinue: _nextPage),
-                  BioDetails(onContinue: _nextPage),
-                  ProfilePhoto(onContinue: _nextPage),
-                  HobbiesPage(onContinue: _nextPage),
-                ],
-              ),
+      body: Column(
+        children: [
+          Flexible(
+            child: PageView(
+              controller: _pageController,
+              physics: NeverScrollableScrollPhysics(),
+              children: [
+                PersonalDetails(onContinue: _nextPage),
+                SecurityDetails(onContinue: _nextPage),
+                ReligionDetails(onContinue: _nextPage),
+                LivingDetails(onContinue: _nextPage),
+                MaritalStatus(onContinue: _nextPage),
+                BioDetails(onContinue: _nextPage),
+                ProfilePhoto(onContinue: _nextPage),
+                HobbiesPage(onContinue: _nextPage),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

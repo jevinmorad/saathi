@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:saathi/api/api_services.dart';
 import 'package:saathi/database/local/const.dart';
 import 'package:saathi/forms/components/button.dart';
 import 'package:saathi/forms/components/center_icon.dart';
@@ -25,6 +26,8 @@ class _EditBasicDetailsState extends State<EditBasicDetails> {
   final FocusNode _firstNameFocus = FocusNode();
   final FocusNode _lastNameFocus = FocusNode();
   final FocusNode _dobFocus = FocusNode();
+
+  bool _isLoading = false;
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime now = DateTime.now();
@@ -285,8 +288,6 @@ class _EditBasicDetailsState extends State<EditBasicDetails> {
     _dobController.text = widget.user[DATE_OF_BIRTH];
   }
 
-  submitData () => Navigator.pop(context, widget.user);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -465,12 +466,22 @@ class _EditBasicDetailsState extends State<EditBasicDetails> {
               ),
       
               // Continue Button Section
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
-                child: ContinueButton(
-                  text: "Continue",
-                  styleType:  ButtonStyleType.enable,
-                  onPressed: submitData,
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
+                  child: ContinueButton(
+                    text: "Continue",
+                    styleType:  ButtonStyleType.enable,
+                    isLoading: _isLoading,
+                    onPressed: () async => {
+                      setState(() => _isLoading = true),
+                      widget.user[FNAME] = _firstNameController.text,
+                      widget.user[LNAME] = _lastNameController.text,
+                      widget.user[DATE_OF_BIRTH] = _dobController.text,
+                      await ApiService().updateUser(context: context, id: widget.user[ID], map: widget.user),
+                      if(context.mounted) Navigator.of(context).pop(),
+                    },
+                  ),
                 ),
               ),
             ],

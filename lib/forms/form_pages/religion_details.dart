@@ -31,7 +31,6 @@ class _ReligionDetailsState extends State<ReligionDetails> {
     'No Religion',
     'Spiritual - not religious'
   ];
-
   final List<String> communityOptions = [
     "Aka",
     "Arabic",
@@ -68,7 +67,6 @@ class _ReligionDetailsState extends State<ReligionDetails> {
     "Tulu",
     "Other"
   ];
-
   final List<String> livingInOptions = [
     "India",
     "United States",
@@ -179,7 +177,7 @@ class _ReligionDetailsState extends State<ReligionDetails> {
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
               child: ContinueButton(
                 text: "Continue",
-                onPressed: isFormValid ? () => widget.onContinue() : null,
+                onPressed: isFormValid ? () =>{widget.onContinue() }: null,
                 styleType: isFormValid
                     ? ButtonStyleType.enable
                     : ButtonStyleType.disable,
